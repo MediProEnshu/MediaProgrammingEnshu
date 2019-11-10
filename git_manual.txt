@@ -63,3 +63,35 @@
    5. YさんがAにpushしようとすると、どちらの変更を反映すべきかわからないので、コンフリクトする.
    6. この場合、Yさんは編集したファイルを完全に元に戻し、一旦AからpullしてBの内容を取り込む.
    7. Yさんはもう一度編集し、Aにpushする.
+
+###### gitの操作例
+```
+︙
+(いろんな編集作業)
+︙
+$ git status
+On branch develop
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   git_manual.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+$ git add git_manual.txt
+
+$ git commit -m "git_manualの追記"
+[develop 09f0684] git_manualの追記
+ 1 file changed, 23 insertions(+), 5 deletions(-)
+
+$ git push origin develop
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 1.09 KiB | 186.00 KiB/s, done.
+Total 3 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To github.com:MediProEnshu/MediaProgrammingEnshu.git
+   2aa7fa2..09f0684  develop -> develop
+```
