@@ -2,7 +2,24 @@
 - master: 完成品を入れる
 - develop: 試運転が完了したプログラムを入れる
 
-###### 主要なgitコマンド
+###### gitの用語
+- リポジトリ: ファイルの編集履歴が記録される場所 ディレクトリ(ファイル置き場)を包含する.
+
+- ワーキングツリー: 今作業してるディレクトリ.
+
+- ブランチ: リポジトリが枝分かれしているイメージ 子のブランチは親のブランチのファイルや編集履歴を包含する.
+包含関係が壊れると、コンフリクトの危険が(下の方参照).
+共同開発では同じ場所で足並みそろえてやると待ち時間が発生するので、普通は別々のブランチに分かれて作業する.
+通常 `master --> develop --> 各々のブランチ` という風に3代で、孫がたくさんあるイメージ.
+
+- ローカル: 手元. ここからみんなの共有するリポジトリに作業の成果物を渡したり、もらったりする.
+
+- リモート: みんなで共有してるリポジトリ. githubのページにいくとGUIでファイルや変更履歴が見られる.
+
+- インデックス: ローカルでの作業内容を保存する場所. 一旦ここに保存して、コミットをすることで現在のローカルリポジトリに編集履歴を保存する.
+そのあとプッシュすると、リモートリポジトリに編集内容が反映される.
+
+###### 主要なgitコマンド(`git コマンド` という風に実行します)
 - fetch: リモートブランチの最新情報を取る.
 - merge: 指定したブランチの変更内容を反映する.
 - pull: fetch + merge
@@ -11,22 +28,23 @@
 - push: 変更内容をリモートに反映させる(新しく作ったブランチには-fをつける).
 - checkout: ブランチを移動(新しくブランチ作り移動する場合は-bをつける).
 - branch: 今いるブランチとローカルにあるブランチを表示.
+- branch -D: いらないローカルブランチを抹消する
 - status: 新しいファイル、編集したファイル、コミットしたファイルを表示.
 
 ###### git開発手順
 
-0. (必要なら)リモートのdevelopから最新の情報を持ってきて反映.  
+0. (必要なら)リモートのdevelopから最新の情報を持ってきて反映.
 `git pull origin develop`
 
-1. developからブランチを生やす(ブランチ名は追加する機能など).  
+1. developからブランチを生やす(ブランチ名は追加する機能など).
 `git checkout -b ブランチの名前`
 
 2. 作業をする.
 
-3. コミットするファイルの追加.  
+3. コミットするファイルの追加.
 `git add 編集したファイル1 編集したファイル2 編集したファイルN `
 
-4. addしたファイルのコミット.  
+4. addしたファイルのコミット.
 `git commit -m "好きなメッセージ(編集の要約など)"`
 
 5. ブランチのプッシュ(共有してるリポジトリに登録)
@@ -45,3 +63,35 @@
    5. YさんがAにpushしようとすると、どちらの変更を反映すべきかわからないので、コンフリクトする.
    6. この場合、Yさんは編集したファイルを完全に元に戻し、一旦AからpullしてBの内容を取り込む.
    7. Yさんはもう一度編集し、Aにpushする.
+
+###### gitの操作例
+```
+︙
+(いろんな編集作業)
+︙
+$ git status
+On branch develop
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   git_manual.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+$ git add git_manual.txt
+
+$ git commit -m "git_manualの追記"
+[develop 09f0684] git_manualの追記
+ 1 file changed, 23 insertions(+), 5 deletions(-)
+
+$ git push origin develop
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 1.09 KiB | 186.00 KiB/s, done.
+Total 3 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To github.com:MediProEnshu/MediaProgrammingEnshu.git
+   2aa7fa2..09f0684  develop -> develop
+```
