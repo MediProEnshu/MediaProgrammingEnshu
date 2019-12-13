@@ -15,9 +15,18 @@ class BaseCharacterModel {
     private String imagePath;
 
     public BaseCharacterModel(int hp, String pathString) {
+        if(hp < 0){ hp = 0; } // 不適切なヒットポイントの修正
         maxHitPoint = hp;
         hitPoint = hp;
-        imagePath pathString;
+        imagePath = pathString;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String pathString) {
+        imagePath = pathString;
     }
 
     /* ヒットポイントを返す. */
@@ -42,10 +51,60 @@ class BaseCharacterModel {
 /* Object: キャラクターの表示 */
 /////////////////////////////////////////////////////////
 class BaseCharacterLabel extends JLabel {
-    private model;
+    private BaseCharacterModel model;
 
-    public void BaseCharacterLabel(BaseCharacterModel bcm) {
+    public BaseCharacterLabel(BaseCharacterModel bcm) {
         model = bcm;
-        this.// 画像をこいつに貼り付ける
+        this.setCharacterImage();
+    }
+
+    /* キャラクターの画像をセット */
+    public void setCharacterImage() {
+        ImageIcon icon = new ImageIcon(model.getImagePath());
+        this.setIcon(icon);
+    }
+}
+
+
+/* Test: 描画テスト用クラス */
+/////////////////////////////////////////////////////////
+class BaseCharacterTest extends JFrame implements KeyListener {
+    private BaseCharacterModel model;
+    private BaseCharacterLabel chara;
+    
+    public BaseCharacterTest() {
+        model = new BaseCharacterModel(5, "./sampleChara.png");
+        chara = new BaseCharacterLabel(model);
+        this.addKeyListener(this); // キー入力受付
+
+        /* 表示のための各種セッティング */
+        this.setTitle("BaseCharacter テスト");
+        this.add(chara, BorderLayout.CENTER);
+        this.pack();
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
+    }
+    
+    /* キーを押された時の処理 */
+    public void keyPressed(KeyEvent e) {
+        /* 何かのキー押したらダメージ */
+        model.giveDamage(1);
+
+        if(model.isDead()) {
+            /* 死んだら、ガイコツの画像に差し替え */
+            model.setImagePath("./sampleChara2.png");
+            chara.setCharacterImage();
+            /* GUI書き換え */
+            this.revalidate();
+            this.repaint();
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {}
+
+    /* main関数 */
+    public static void main(String argv[]) {
+        new BaseCharacterTest();
     }
 }
