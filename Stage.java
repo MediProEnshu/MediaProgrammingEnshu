@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.awt.Graphics2D;
 import javax.imageio.ImageIO;
 import javax.imageio.plugins.tiff.TIFFDirectory;
 import java.awt.image.BufferedImage;
@@ -9,8 +10,7 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.nio.file.Paths;
-
-final class GameScreen extends JPanel {
+class GameScreen extends JPanel implements MouseListener{
     static final int startX = 0;
     static final int startY = 0;
     volatile int x;
@@ -18,16 +18,21 @@ final class GameScreen extends JPanel {
     int width = 0;
     int height = 0;
     int TileSize = 32;
+    int rect_x = 0;
+    int rect_y = 0;
+    boolean rect_flag = false;
+    String msg = "0";
     BufferedImage playerImage;
     BufferedImage mapImage;
     boolean doneFirstDrawing;
-
+    Graphics2D rect;
     GameScreen(CreateMap map) throws IOException{
         //ImportTile tileset = new ImportTile();//キャラの設定
         //this.playerImage = tileset.getTile('E');
         this.mapImage = map.createImage();
         this.width = mapImage.getWidth();//サイズ設定
         this.height = mapImage.getHeight();
+        addMouseListener(this);
         initialize();
     }
     void initialize() {//ゲーム画面の初期位置の設定
@@ -43,8 +48,33 @@ final class GameScreen extends JPanel {
             doneFirstDrawing = true;
         }
         // マップ表示
-        g.drawImage(mapImage.getSubimage(x, y, getWidth(), getHeight()), 10, 0, this);
+        g.drawImage(mapImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
+        rect = (Graphics2D)g;
+        rect.setColor(Color.RED);
+        BasicStroke stroke = new BasicStroke(5.0f);
+        rect.setStroke(stroke);
+        if(rect_flag) {
+        rect.drawRect(rect_x, rect_y, TileSize, TileSize);
+        }
+
     }
+    public void mouseClicked(MouseEvent e) {
+        int btn = e.getButton();
+        Point point = e.getPoint();
+        if (btn == MouseEvent.BUTTON1){
+            rect_x = point.x - (point.x%TileSize);
+            rect_y = point.y- (point.y%TileSize);
+            rect_flag = true;
+        }else if (btn == MouseEvent.BUTTON3){
+            rect_flag = false;
+        }else if (btn == MouseEvent.BUTTON2){
+        }
+        repaint();
+    }
+    public void mouseReleased(MouseEvent e){ }
+    public void mouseEntered(MouseEvent e) { }
+    public void mouseExited(MouseEvent e)  { }
+    public void mousePressed(MouseEvent e) { }
 }
 
 class CreateMap {//マップを生成するクラス
@@ -75,9 +105,9 @@ class CreateMap {//マップを生成するクラス
         ImportTile tileset = new ImportTile();//タイルセットを呼び出す
         int verticalLength = data.length;//縦の長さ
         int horizontalLength = data[0].length;//横の長さ
-        int gY = TileSize * 4;//タイルをどこから書き始めるか。この設定だと大体左上
+        int gY = 0;//タイルをどこから書き始めるか。この設定だと大体左上
         for (int y = 0; y < verticalLength; y++) {
-            int gX = TileSize * 4;
+            int gX = 0;
             for (int x = 0; x < horizontalLength; x++) {
                 g.drawImage(tileset.getTile(getCode(x, y)), gX, gY, null);//描画
                 gX += TileSize;//タイルの大きさ分横にずらす
@@ -121,12 +151,12 @@ class ImportTile extends Component {//タイルチップを読み込むクラス
 class Frame extends JFrame {
     public Frame() throws IOException {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(1,1));
-        this.add(panel, BorderLayout.CENTER);
         CreateMap map = new CreateMap();
         GameScreen screen = new GameScreen(map);
+        panel.setLayout(new GridLayout(2, 3));
         panel.setPreferredSize(new Dimension(screen.width, screen.height));
         panel.add(screen);
+        this.add(panel, BorderLayout.CENTER);
         this.pack(); 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
