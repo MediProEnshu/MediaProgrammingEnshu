@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.nio.file.Paths;
+import java.awt.Point;
 class CreateMap {//マップを生成するクラス
     private char[][] data;
     private int hor;
@@ -72,6 +73,83 @@ class ImportTile extends Component {//タイルチップを読み込むクラス
         return tileset.getSubimage(x, y, TileSize, TileSize);
     }
 }
+class BaseCharacterModel {
+    private int x = 0;
+    private int y = 0;
+
+    private int maxHitPoint;
+    private int hitPoint;
+    private String imagePath;
+    boolean selected = false;
+    public BaseCharacterModel(int hp, String pathString) {
+        if(hp < 0){ hp = 0; } // 不適切なヒットポイントの修正
+        maxHitPoint = hp;
+        hitPoint = hp;
+        imagePath = pathString;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String pathString) {
+        imagePath = pathString;
+    }
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+    public Point getPosition() {
+        Point p = new Point();
+        p.x = x;
+        p.y = y;
+        return p;
+    }
+
+    /* ヒットポイントを返す. */
+    public int getHitPoint() {
+        return hitPoint;
+    }
+
+    /* このキャラクターは絶命した? */
+    public boolean isDead() {
+        return hitPoint <= 0;
+    }
+
+    /* damageが0以上なら損傷、0未満なら治療. */
+    public void giveDamage(int damage) {
+        hitPoint -= damage;
+        if(hitPoint < 0)           { hitPoint = 0; }
+        if(hitPoint > maxHitPoint) { hitPoint = maxHitPoint; }
+    }
+}
+/* Object: キャラクターの表示 */
+/////////////////////////////////////////////////////////
+class BaseCharacterLabel extends JLabel {
+    private BaseCharacterModel model;
+    BufferedImage icon;
+    public BaseCharacterLabel(BaseCharacterModel bcm) throws IOException{
+        model = bcm;
+        this.setCharacterImage();
+    }
+    /* キャラクターの画像をセット */
+    public void setCharacterImage() throws IOException{
+        icon = ImageIO.read(new File(model.getImagePath()));
+    }
+}
+
+class DrawCharacter extends JPanel {
+    BaseCharacterModel model;
+    BaseCharacterLabel label;
+    public DrawCharacter() {
+        model = new BaseCharacterModel(5, "./Chara.png");
+        try {
+            label = new BaseCharacterLabel(model);
+        } catch (IOException e) {
+            
+        }
+    }
+}
 class GameScreen extends JPanel implements MouseListener{
     static final int startX = 0;
     static final int startY = 0;
@@ -82,6 +160,7 @@ class GameScreen extends JPanel implements MouseListener{
     int TileSize = 32;
     int rect_x = 0;
     int rect_y = 0;
+    DrawCharacter chara;
     boolean rect_flag = false;
     BufferedImage mapImage;
     CreateMap map = new CreateMap();
@@ -91,10 +170,15 @@ class GameScreen extends JPanel implements MouseListener{
         this.height = mapImage.getHeight();
         addMouseListener(this);
         initialize();
+        MakeChara();
     }
     void initialize() {//ゲーム画面の初期位置の設定
         this.x = TileSize * (startX);
         this.y = TileSize * (startY);
+    }
+    void MakeChara() throws IOException{
+        chara = new DrawCharacter();
+        chara.model.setPosition(64, 64);
     }
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -104,7 +188,9 @@ class GameScreen extends JPanel implements MouseListener{
 
         }
         g.drawImage(mapImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
-        g.setColor(Color.BLACK);
+        g.drawImage(chara.label.icon, chara.model.getPosition().x, chara.model.getPosition().y, this);
+        g.setColor(Color.RED);
+        if(rect_flag == true)
         g.drawRect(rect_x, rect_y, TileSize, TileSize);
     }
     public BufferedImage createImage() throws IOException{//マップを
@@ -131,6 +217,15 @@ class GameScreen extends JPanel implements MouseListener{
             rect_x = point.x - (point.x%TileSize);
             rect_y = point.y- (point.y%TileSize);
             rect_flag = true;
+
+            if(rect_x == chara.model.getPosition().x && rect_y == chara.model.getPosition().y && chara.model.selected == false)  {
+                chara.model.selected = true;
+            }
+            else if(chara.model.selected == true) {
+                chara.model.setPosition(rect_x, rect_y);
+                rect_flag = false;
+                chara.model.selected = false;
+            }
         }else if (btn == MouseEvent.BUTTON3){
             rect_flag = false;
         }else if (btn == MouseEvent.BUTTON2){
@@ -145,6 +240,7 @@ class GameScreen extends JPanel implements MouseListener{
 class Frame extends JFrame {
     public Frame() throws IOException {
         JPanel panel = new JPanel();
+        this.setTitle("BaseCharacter テスト");
         GameScreen screen = new GameScreen();
         panel.setLayout(new GridLayout(1, 1));
         panel.setPreferredSize(new Dimension(screen.width, screen.height));
