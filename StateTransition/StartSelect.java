@@ -18,7 +18,8 @@ class StartSelect extends JPanel implements ActionListener{
 
     final int GAME_START = 0;
     final int GAME_QUIT = 1; 
-    final int UPDATE_CURSOR = 2;
+    //final int GAME_RESULT = 2;
+    final int UPDATE_CURSOR = 3;
     private int start_state = -1; // 選択したボタンに応じて値が変化する（統括への通知用）
 
     //ゲーム終了時（Start2Quit）に使う,utilにもTimerあるので冗長になってる
@@ -43,11 +44,6 @@ class StartSelect extends JPanel implements ActionListener{
         this.add(view, BorderLayout.CENTER); // Viewの追加 ここではボーダーレイアウトの中央に追加している.
 	this.add(Notice, BorderLayout.SOUTH);
         
-/*
-        this.setVisible(true);
-        this.pack();
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-*/
     }
 
     public int Update(/*Observable o,Object arg*/){
@@ -64,10 +60,13 @@ class StartSelect extends JPanel implements ActionListener{
           }
       }else{ // カーソルを動かした場合.
           start_state = UPDATE_CURSOR;
-
       }
 
       return start_state;
+    }
+
+    public BaseSelectController getBaseSelectController(){
+        return controller;
     }
  
     ///
@@ -75,6 +74,7 @@ class StartSelect extends JPanel implements ActionListener{
     ///
     public void ToGame(){
         result = new JLabel("みんなの太陽一等賞!!");
+	JPanel waffle = new JPanel();
         view.removeAll();
         view.add(result, BorderLayout.CENTER);
         this.add(view, BorderLayout.CENTER);

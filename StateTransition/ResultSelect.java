@@ -6,15 +6,16 @@ import java.util.*;
 
 /* View */
 /////////////////////////////////////////////////////////
-class ResultSelect extends JFrame implements ActionListener{
+class ResultSelect extends JPanel implements ActionListener{
     BaseSelectModel model;
     BaseSelectView view;
     BaseSelectController controller;
     JLabel result; // コマンド選択に応じて表示するラベル
 
     final int GAME_START = 0;
-    final int GAME_QUIT = 1; 
-    final int UPDATE_CURSOR = 2;
+    final int GAME_QUIT = 1;
+    //final int GAME_RESULT = 2;
+    final int UPDATE_CURSOR = 3;
     private int result_state = -1; // 選択したボタンに応じて値が変化する（統括への通知用）
 
     //ゲーム終了時（Start2Quit）に使う,utilにもTimerがあるため冗長になってる
@@ -39,9 +40,6 @@ class ResultSelect extends JFrame implements ActionListener{
         this.add(view, BorderLayout.CENTER); // Viewの追加 ここではボーダーレイアウトの中央に追加している.
 	this.add(Notice, BorderLayout.SOUTH);
 
-        this.pack();
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
     }
 
     public int Update(){
@@ -61,6 +59,10 @@ class ResultSelect extends JFrame implements ActionListener{
       }
 
         return result_state;
+    }
+
+    public BaseSelectController getBaseSelectController(){
+        return controller;
     }
 
 
