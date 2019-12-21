@@ -1,3 +1,5 @@
+package game;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -15,7 +17,7 @@ class CreateMap {//マップを生成するクラス
     private char[][] data;
     private int hor;
     private int ver;
-    
+
     public CreateMap() {
         data = readMapData();
         hor = data[0].length;
@@ -54,7 +56,7 @@ class ImportTile extends Component {//タイルチップを読み込むクラス
     static String codemap = ".0123456789ABCDE";//タイルと文字の対応のための文字列
     private BufferedImage tileset = null;//タイルセットを読み根で格納する
     public ImportTile()throws IOException {
-        String imageFilename = "TileSet.PNG";
+        String imageFilename = "TileSet.pngex";
         this.tileset = ImageIO.read(new File(imageFilename));
     }
     public Dimension getPreferredSize() {
@@ -146,7 +148,7 @@ class DrawCharacter extends JPanel {
         try {
             label = new BaseCharacterLabel(model);
         } catch (IOException e) {
-            
+
         }
     }
 }
@@ -237,8 +239,9 @@ class GameScreen extends JPanel implements MouseListener{
     public void mouseExited(MouseEvent e)  { }
     public void mousePressed(MouseEvent e) { }
 }
-class Frame extends JFrame {
-    public Frame() throws IOException {
+
+public class MapFrame extends JFrame {
+    public MapFrame() throws IOException {
         JPanel panel = new JPanel();
         this.setTitle("BaseCharacter テスト");
         GameScreen screen = new GameScreen();
@@ -246,11 +249,11 @@ class Frame extends JFrame {
         panel.setPreferredSize(new Dimension(screen.width, screen.height));
         panel.add(screen);
         this.add(panel, BorderLayout.CENTER);
-        this.pack(); 
+        this.pack();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
     public static void main(String[] args) throws IOException {
-        new Frame();
+        new MapFrame();
     }
 }

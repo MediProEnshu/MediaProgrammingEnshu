@@ -1,3 +1,5 @@
+package game;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -118,19 +120,20 @@ class ImportTile extends Component {
         return tileset.getSubimage(x, y, TileSize, TileSize);
     }
 }
-class Frame extends JFrame {
+
+public class Aomero extends JFrame {
     CreateMap map;
     GameScreen screen;
-    public Frame() throws IOException {
+    public Aomero() throws IOException {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(3,1));
         this.setBackground(Color.BLUE);
         this.add(panel, BorderLayout.CENTER);
-        this.pack(); 
+        this.pack();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
     public static void main(String[] args) throws IOException {
-        new Frame();
+        new Aomero();
     }
 }
