@@ -74,6 +74,7 @@ public class StartSelect extends JPanel implements ActionListener{
         result = new JLabel("みんなの太陽一等賞!!");
 	JPanel waffle = new JPanel();
         view.removeAll();
+        this.removeAll();
         view.add(result, BorderLayout.CENTER);
         this.add(view, BorderLayout.CENTER);
         this.revalidate(); // GUIの更新
@@ -90,6 +91,7 @@ public class StartSelect extends JPanel implements ActionListener{
 
         result = new JLabel("ゲームを終了しています…");
         view.removeAll();
+        this.removeAll();
         view.add(result, BorderLayout.CENTER);
         this.add(view, BorderLayout.CENTER);
         this.revalidate(); // GUIの更新

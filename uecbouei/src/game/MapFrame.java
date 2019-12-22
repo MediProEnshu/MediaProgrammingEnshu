@@ -56,7 +56,7 @@ class ImportTile extends Component {//タイルチップを読み込むクラス
     static String codemap = ".0123456789ABCDE";//タイルと文字の対応のための文字列
     private BufferedImage tileset = null;//タイルセットを読み根で格納する
     public ImportTile()throws IOException {
-        String imageFilename = "TileSet.pngex";
+        String imageFilename = "game/TileSet.png";
         this.tileset = ImageIO.read(new File(imageFilename));
     }
     public Dimension getPreferredSize() {
@@ -144,7 +144,7 @@ class DrawCharacter extends JPanel {
     BaseCharacterModel model;
     BaseCharacterLabel label;
     public DrawCharacter() {
-        model = new BaseCharacterModel(5, "./Chara.png");
+        model = new BaseCharacterModel(5, "game/Chara.png");
         try {
             label = new BaseCharacterLabel(model);
         } catch (IOException e) {
