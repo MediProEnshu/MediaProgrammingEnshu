@@ -10,90 +10,6 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.nio.file.Paths;
 import java.util.Iterator;
-
-class Map {//マップを生成するクラス
-    private char[][] stageMapData;
-    private char [][] charaMapData;
-    private BaseCharacter [][] charaMap;
-    private int horizontalLength;
-    private int verticalLength;
-    private ArrayList character1 = new ArrayList();
-    private ArrayList character2 = new ArrayList();
-    public Map(String stageMapFile) {
-        stageMapData = readstageMapData(stageMapFile);
-        horizontalLength = stageMapData[0].length;
-        verticalLength = stageMapData.length;
-        charaMapData = new char [verticalLength][horizontalLength];
-        BaseCharacter c = new BaseCharacter(5, "chara1", 32, 32, 1, '1');
-        character1.add(c);
-    }
-    private char[][] readstageMapData(String stageMapFile) {//map.txtから文字列を読み込む
-        ArrayList<String> arrayHorizontalLine = new ArrayList<>();//読み込んだ文字列を格納する
-        Scanner scanner = new Scanner(getClass().getResourceAsStream(stageMapFile));//map.txtを読み込む
-            while (scanner.hasNextLine()) {//空行になるまで行を読み込む
-                String mapstring = scanner.nextLine();//mapstringに読み込んだ行を格納
-                arrayHorizontalLine.add(mapstring.replace("\t", ""));//改行文字を消す
-            }
-        int lineCount = arrayHorizontalLine.size();//読み込んだ行数を出す
-        char[][] stageMapArray = new char[lineCount][];//読み込んだ行数のサイズの行を持つ二次元配列を作る
-        for (int i = 0; i < lineCount; i++) {//char型配列に読み込んだ文字列を変換
-            stageMapArray[i] = arrayHorizontalLine.get(i).toCharArray();
-        }
-        return stageMapArray;
-    }
-    public void charaMapInit() {
-        for(int i = 0; i < horizontalLength; i++) {
-            for(int j = 0; j < verticalLength; j++) {
-                charaMapData[j][i] = '.';
-            }
-            for(Iterator it = character1.iterator(); it.hasNext(); ){
-                BaseCharacter c = (BaseCharacter)(it.next());
-                charaMapData[c.getPosition().y][c.getPosition().x] = c.getClassType();
-             }
-        }
-    }
-    public char getStageMapCode(int x, int y) {//ある位置のマップの記号返す
-        // 引数チェックは省略
-        return stageMapData[y][x];
-    }
-    public char getCharaMapCode(int x, int y) {//ある位置のマップの記号返す
-        // 引数チェックは省略
-        return charaMapData[y][x];
-    }
-    public void setCode(int x, int y, char tile) {
-        charaMapData[y][x] = tile;
-    }
-    public int getHorizontalLength() {
-        return horizontalLength;
-    }
-    public int getVerticalLength() {
-        return verticalLength;
-    }
-}
-class ImportTile extends Component {//タイルチップを読み込むクラス
-    public final int TileSize = 32;//タイルのサイズ
-    static String codemap = ".0123456789ABCDE";//タイルと文字の対応のための文字列
-    private BufferedImage tileset = null;//タイルセットを読み根で格納する
-    public ImportTile(String file)throws IOException {
-        String imageFilename = file;
-        this.tileset = ImageIO.read(new File(imageFilename));
-    }
-    public Dimension getPreferredSize() {
-        int width = 100;//高さと幅の初期値
-        int height = 100;
-        if (tileset != null) {//タイルセットがちゃんと読み込んでるなら
-            width = tileset.getWidth(null);//サイズ決定
-            height = tileset.getHeight(null);//
-        }
-        return new Dimension(width, height);//高さ幅を設定
-    }
-    BufferedImage getTile(char code) {
-        int index = codemap.indexOf(code);//map.txtから読み取った記号がcodemapの何番目かを返す
-        int x = (index % 4) * TileSize;//読み取った記号とタイルを対応させる
-        int y = (index / 4) * TileSize;
-        return tileset.getSubimage(x, y, TileSize, TileSize);
-    }
-}
 class GameScreen extends JPanel implements MouseListener{
     static final int startX = 0;
     static final int startY = 0;
@@ -108,9 +24,9 @@ class GameScreen extends JPanel implements MouseListener{
     boolean rect_flag = false;
     BufferedImage mapImage;
     BufferedImage charaImage;
-    CreateMap map = new CreateMap("map1.txt");
+    Map map = new Map("map1.txt");
     public GameScreen() throws IOException {
-        this.mapImage = createImage("Tileset.PNG", true);
+        this.mapImage = createImage("Tile.png", true);
         //this.charaImage = createImage("Charaset.PNG");
         this.width = mapImage.getWidth();//サイズ設定
         this.height = mapImage.getHeight();
@@ -124,7 +40,7 @@ class GameScreen extends JPanel implements MouseListener{
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(mapImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
-        g.drawImage(charaImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
+        //g.drawImage(charaImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
         g.setColor(Color.RED);
         if(rect_flag == true) {
         g.drawRect(rect_x, rect_y, TileSize, TileSize);
@@ -195,7 +111,6 @@ class BaseCharacter {
         if(hp < 0){ hp = 0; } // 不適切なヒットポイントの修正
         maxHitPoint = hp;
         hitPoint = hp;
-        setGraphic(imagePath);
         this.x = x;
         this.y = y;
         this.name = name;
@@ -259,17 +174,99 @@ class BaseCharacter {
         this.graphic =  ImageIO.read(new File(filepath));
     }
 }
+class ImportTile extends Component {//タイルチップを読み込むクラス
+    public final int TileSize = 32;//タイルのサイズ
+    static String codemap = ".0123456789ABCDE";//タイルと文字の対応のための文字列
+    private BufferedImage tileset = null;//タイルセットを読み根で格納する
+    public ImportTile(String filename)throws IOException {
+        String imageFilename = filename;
+        this.tileset = ImageIO.read(new File(imageFilename));
+    }
+    public Dimension getPreferredSize() {
+        int width = 100;//高さと幅の初期値
+        int height = 100;
+        if (tileset != null) {//タイルセットがちゃんと読み込んでるなら
+            width = tileset.getWidth(null);//サイズ決定
+            height = tileset.getHeight(null);//
+        }
+        return new Dimension(width, height);//高さ幅を設定
+    }
+    BufferedImage getTile(char code) {
+        int index = codemap.indexOf(code);//map.txtから読み取った記号がcodemapの何番目かを返す
+        int x = (index % 4) * TileSize;//読み取った記号とタイルを対応させる
+        int y = (index / 4) * TileSize;
+        return tileset.getSubimage(x, y, TileSize, TileSize);
+    }
+}
+class Map {//マップを生成するクラス
+    private char[][] stageMapData;
+    private char [][] charaMapData;
+    //private BaseCharacter [][] charaMap;
+    private int horizontalLength;
+    private int verticalLength;
+    private ArrayList<BaseCharacter> character1 = new ArrayList<BaseCharacter>();
+    //private ArrayList<BaseCharacter> character2 = new ArrayList();
+    public Map(String stageMapFile) {
+        stageMapData = readstageMapData(stageMapFile);
+        horizontalLength = stageMapData[0].length;
+        verticalLength = stageMapData.length;
+        charaMapData = new char [verticalLength][horizontalLength];
+        BaseCharacter c = new BaseCharacter(5, "chara1", 32, 32, 1, '1');
+        character1.add(c);
+    }
+    private char[][] readstageMapData(String stageMapFile) {//map.txtから文字列を読み込む
+        ArrayList<String> arrayHorizontalLine = new ArrayList<>();//読み込んだ文字列を格納する
+        Scanner scanner = new Scanner(getClass().getResourceAsStream(stageMapFile));//map.txtを読み込む
+            while (scanner.hasNextLine()) {//空行になるまで行を読み込む
+                String mapstring = scanner.nextLine();//mapstringに読み込んだ行を格納
+                arrayHorizontalLine.add(mapstring.replace("\t", ""));//改行文字を消す
+            }
+        int lineCount = arrayHorizontalLine.size();//読み込んだ行数を出す
+        char[][] stageMapArray = new char[lineCount][];//読み込んだ行数のサイズの行を持つ二次元配列を作る
+        for (int i = 0; i < lineCount; i++) {//char型配列に読み込んだ文字列を変換
+            stageMapArray[i] = arrayHorizontalLine.get(i).toCharArray();
+        }
+        return stageMapArray;
+    }
+    public void charaMapInit() {
+        for(int i = 0; i < horizontalLength; i++) {
+            for(int j = 0; j < verticalLength; j++) {
+                charaMapData[j][i] = '.';
+            }
+            for(Iterator it = character1.iterator(); it.hasNext(); ){
+                BaseCharacter c = (BaseCharacter)(it.next());
+                charaMapData[c.getPosition().y][c.getPosition().x] = c.getClassType();
+            }
+        }
+    }
+    public char getStageMapCode(int x, int y) {//ある位置のマップの記号返す
+        // 引数チェックは省略
+        return stageMapData[y][x];
+    }
+    public char getCharaMapCode(int x, int y) {//ある位置のマップの記号返す
+        // 引数チェックは省略
+        return charaMapData[y][x];
+    }
+    public void setCode(int x, int y, char tile) {
+        charaMapData[y][x] = tile;
+    }
+    public int getHorizontalLength() {
+        return horizontalLength;
+    }
+    public int getVerticalLength() {
+        return verticalLength;
+    }
+}
+
 class Frame extends JFrame {
     public Frame() throws IOException {
         JPanel panel = new JPanel();
-        this.setTitle("BaseCharacter テスト");
+        CreateMap map = new CreateMap();
         GameScreen screen = new GameScreen();
         panel.setLayout(new GridLayout(1, 1));
-        panel.setBackground(Color.WHITE);
         panel.setPreferredSize(new Dimension(screen.width, screen.height));
         panel.add(screen);
         this.add(panel, BorderLayout.CENTER);
-        this.setBackground(Color.RED);
         this.pack(); 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
