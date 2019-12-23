@@ -27,7 +27,7 @@ class GameScreen extends JPanel implements MouseListener{
     Map map = new Map("map1.txt");
     public GameScreen() throws IOException {
         this.mapImage = createImage("Tile.png", true);
-        //this.charaImage = createImage("Charaset.PNG");
+        this.charaImage = createImage("CharaMap.png", false);
         this.width = mapImage.getWidth();//サイズ設定
         this.height = mapImage.getHeight();
         addMouseListener(this);
@@ -37,14 +37,19 @@ class GameScreen extends JPanel implements MouseListener{
         this.x = TileSize * (startX);
         this.y = TileSize * (startY);
     }
-    public void paintComponent(Graphics g) {
+    public void paintComponent(Graphics g){
         super.paintComponent(g);
-        g.drawImage(mapImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
-        //g.drawImage(charaImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
-        g.setColor(Color.RED);
-        if(rect_flag == true) {
-        g.drawRect(rect_x, rect_y, TileSize, TileSize);
+        try {
+            mapImage = createImage("Tile.png", true);
+            charaImage = createImage("CharaMap.png", false);
+        } catch (Exception e) {
+            //TODO: handle exception
         }
+
+        g.drawImage(mapImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
+        g.drawImage(charaImage.getSubimage(x, y, getWidth(), getHeight()), 0, 0, this);
+        g.setColor(Color.RED);
+        g.drawRect(rect_x, rect_y, TileSize, TileSize);
     }
     public BufferedImage createImage(String fileName, boolean type) throws IOException{//マップを
         BufferedImage bi = new BufferedImage(TileSize * 124, TileSize * 120, BufferedImage.TYPE_INT_ARGB);
@@ -57,9 +62,9 @@ class GameScreen extends JPanel implements MouseListener{
             int gX = 0;
             for (int x = 0; x < horizontalLength; x++) {
                 if(type) {
-                g.drawImage(tileset.getTile(map.getStageMapCode(x, y)), gX, gY, null);//描画
-                } else {
                     g.drawImage(tileset.getTile(map.getStageMapCode(x, y)), gX, gY, null);//描画
+                } else {
+                    g.drawImage(tileset.getTile(map.getCharaMapCode(x, y)), gX, gY, null);//描画
                 }
                 gX += TileSize;//タイルの大きさ分横にずらす
             }
@@ -73,20 +78,13 @@ class GameScreen extends JPanel implements MouseListener{
         if (btn == MouseEvent.BUTTON1){
             rect_x = point.x - (point.x%TileSize);
             rect_y = point.y- (point.y%TileSize);
-            rect_flag = true;
+            map.setCharaMapCode(96/32, 64/32, '2');
 
-            if(rect_x == chara.model.getPosition().x && rect_y == chara.model.getPosition().y && chara.model.selected == false)  {
-                chara.model.selected = true;
-            }
-            else if(chara.model.selected == true) {
-                chara.model.setPosition(rect_x, rect_y);
-                rect_flag = false;
-                chara.model.selected = false;
-            }
         }else if (btn == MouseEvent.BUTTON3){
             rect_flag = false;
         }else if (btn == MouseEvent.BUTTON2){
         }
+
         repaint();
     }
     public void mouseReleased(MouseEvent e){ }
@@ -212,7 +210,10 @@ class Map {//マップを生成するクラス
         verticalLength = stageMapData.length;
         charaMapData = new char [verticalLength][horizontalLength];
         BaseCharacter c = new BaseCharacter(5, "chara1", 32, 32, 1, '1');
+        BaseCharacter d = new BaseCharacter(5, "chara1", 64, 64, 1, '1');
         character1.add(c);
+        character1.add(d);
+        charaMapInit();
     }
     private char[][] readstageMapData(String stageMapFile) {//map.txtから文字列を読み込む
         ArrayList<String> arrayHorizontalLine = new ArrayList<>();//読み込んだ文字列を格納する
@@ -233,12 +234,13 @@ class Map {//マップを生成するクラス
             for(int j = 0; j < verticalLength; j++) {
                 charaMapData[j][i] = '.';
             }
-            for(Iterator it = character1.iterator(); it.hasNext(); ){
-                BaseCharacter c = (BaseCharacter)(it.next());
-                charaMapData[c.getPosition().y][c.getPosition().x] = c.getClassType();
+            for(int j = 0; j < character1.size(); j++){
+                BaseCharacter c = character1.get(j);
+                charaMapData[c.getPosition().y/32][c.getPosition().x/32] = c.getClassType();
             }
         }
     }
+
     public char getStageMapCode(int x, int y) {//ある位置のマップの記号返す
         // 引数チェックは省略
         return stageMapData[y][x];
@@ -247,7 +249,10 @@ class Map {//マップを生成するクラス
         // 引数チェックは省略
         return charaMapData[y][x];
     }
-    public void setCode(int x, int y, char tile) {
+    public void setStageMapCode(int x, int y, char tile) {
+        stageMapData[y][x] = tile;
+    }
+    public void setCharaMapCode(int x, int y, char tile) {
         charaMapData[y][x] = tile;
     }
     public int getHorizontalLength() {
