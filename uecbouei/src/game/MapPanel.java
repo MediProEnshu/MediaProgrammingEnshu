@@ -16,11 +16,9 @@ import java.awt.Point;
 
 public class MapPanel extends JPanel {
     public MapPanel() throws IOException {
-        JPanel panel = new JPanel();
         GameScreen screen = new GameScreen();
-        panel.setLayout(new GridLayout(1, 1));
-        panel.setPreferredSize(new Dimension(screen.width, screen.height));
-        panel.add(screen);
-        this.add(panel, BorderLayout.CENTER);
+        this.setLayout(new GridLayout(1, 1));
+        this.setPreferredSize(new Dimension(screen.width, screen.height));
+        this.add(screen);
     }
 }

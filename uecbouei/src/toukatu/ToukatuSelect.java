@@ -37,7 +37,7 @@ class ToukatuSelect extends JFrame implements Observer{
         this.add(ss, BorderLayout.CENTER); // Viewの追加 ここではボーダーレイアウトの中央に追加している.
         is_start = true;
         this.addKeyListener(ss.getBaseSelectController());
-        this.setSize(800, 800);
+        this.setSize(1000, 600);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -50,7 +50,7 @@ class ToukatuSelect extends JFrame implements Observer{
             switch(state){ // 選択したコマンドに応じた実行.
                 case GAME_START:
                     // ss.ToGame();
-                    this.removeAll();
+                    this.getContentPane().removeAll();
                     try {
                         mp = new MapPanel();
                     } catch(IOException e){
