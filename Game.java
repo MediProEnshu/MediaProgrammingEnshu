@@ -89,26 +89,26 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
     }
 }
 class GameScreen extends JPanel implements MouseListener{
-    static final int startX = 0;
-    static final int startY = 0;
+    static final int startX = 0;//画面の位置を調整するもの
+    static final int startY = 0;//画面の一を調整するもの
     int x;
     int y;
-    int tmp_x;
-    int tmp_y;
-    int width = 0;
-    int height = 0;
-    int TileSize = 32;
-    int rect_x = 0;
+    int tmp_x;//移動の際に移動元のマスを記憶するもの
+    int tmp_y;//同上
+    int width = 0;//画面のサイズ
+    int height = 0;//同上
+    int TileSize = 32;//タイルの大きさ
+    int rect_x = 0;//カーゾルの位置を記憶するもの
     int rect_y = 0;
     char tmp;
     boolean ButtleSelectflag = false;
     BaseCharacter tmpl;
     Color rectColor = Color.red;
     GameState state = new GameState();
-    boolean rect_flag = false;
-    BufferedImage mapImage;
-    BufferedImage charaImage;
-    BufferedImage panelImage;
+    boolean rect_flag = false;//カーソルを画面に表示するかしないか
+    BufferedImage mapImage;//マップの画像を記憶する物
+    BufferedImage charaImage;//キャラの画像を記憶する物
+    BufferedImage panelImage;//範囲選択の際に染めたものを記録するもの
     Map map = new Map("map1.txt");
     public GameScreen() throws IOException {
         mapImage = createImage("MapTile.png", 1);
@@ -171,7 +171,7 @@ class GameScreen extends JPanel implements MouseListener{
             int array_x = rect_x/32;
             int array_y = rect_y/32;
             if(state.getMoveFlag() == true && state.getBattleFlag() == false && state.getSummonFlag() == false) {//移動
-                if(map.getCharaMapCode(array_x, array_y) != '.' && map.getCharaPosition(array_x, array_y).getMoveSelected() == false && state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer()) {
+                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getMoveSelected() == false && state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer()) {
                     tmp_x = rect_x; tmp_y = rect_y;
                     map.paintMoveRange(array_x, array_y, map.getCharaPosition(array_x, array_y).getSpeed());
                     map.setCharaFlag(true);
@@ -199,11 +199,14 @@ class GameScreen extends JPanel implements MouseListener{
                     }
                 }    
             } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){
-                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && ) {
+                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && ButtleSelectflag == false) {
                     tmpl = map.getCharaPosition(array_x, array_y);
+                    if(tmpl.getPlayer() != state.getNowPlayer()) {
+                        return;
+                    }
                     map.paintButtleRange(array_x, array_y);
                     ButtleSelectflag = true;
-                } else if(flag == true && map.getHaniMapCode(array_x, array_y) == '1') {
+                } else if(ButtleSelectflag == true && map.getHaniMapCode(array_x, array_y) == '1') {
                     BaseCharacter chara = map.getCharaPosition(array_x, array_y);
                     if(chara.getClassType() != 'E') {
                         chara.giveDamage(tmpl.getAttackPoint());
@@ -217,7 +220,7 @@ class GameScreen extends JPanel implements MouseListener{
                         map.deleteCharacter(chara, chara.getPlayer());
                         //ゲームセット
                     }
-                    flag = false;
+                    ButtleSelectflag = false;
                     map.haniMapInit();
                 }
             }
@@ -704,7 +707,7 @@ class Map {//マップを生成するクラス
 //
     }
 }
-class StageEditScreen extends GameScreen implements MouseListener{
+class StageEditScreen extends GameScreen implements MouseListener{//エディタのViewにあたる部分
     public StageEditScreen() throws IOException {
         super();
     }
@@ -739,12 +742,12 @@ class StageEditScreen extends GameScreen implements MouseListener{
     public void mouseExited(MouseEvent e)  { }
     public void mousePressed(MouseEvent e) { }
 }
-class StageEdit extends Map{
+class StageEdit extends Map{//エディタのMにあたる部分
     public StageEdit(String s) {
         super(s);
     }
 }
-class StageEditFrame extends JFrame implements ActionListener {
+class StageEditFrame extends JFrame implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditFrame()をどっかでやればいいはず.
     StageEditScreen screen;
     JButton save = new JButton("save");
     JButton b [] = new JButton[16];
@@ -930,6 +933,6 @@ class GameFrame extends JFrame implements ActionListener{
         screen.repaint();
     }
     public static void main(String[] args) throws IOException {
-        new GameFrame();
+        new StageEditFrame();
     }
 }
