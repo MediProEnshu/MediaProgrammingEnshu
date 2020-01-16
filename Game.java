@@ -101,7 +101,7 @@ class GameScreen extends JPanel implements MouseListener{
     int rect_x = 0;
     int rect_y = 0;
     char tmp;
-    boolean flag = false;
+    boolean ButtleSelectflag = false;
     BaseCharacter tmpl;
     Color rectColor = Color.red;
     GameState state = new GameState();
@@ -170,7 +170,7 @@ class GameScreen extends JPanel implements MouseListener{
             rect_y = point.y- (point.y%TileSize);
             int array_x = rect_x/32;
             int array_y = rect_y/32;
-            if(state.getMoveFlag() == true && state.getBattleFlag() == false && state.getSummonFlag() == false) {
+            if(state.getMoveFlag() == true && state.getBattleFlag() == false && state.getSummonFlag() == false) {//移動
                 if(map.getCharaMapCode(array_x, array_y) != '.' && map.getCharaPosition(array_x, array_y).getMoveSelected() == false && state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer()) {
                     tmp_x = rect_x; tmp_y = rect_y;
                     map.paintMoveRange(array_x, array_y, map.getCharaPosition(array_x, array_y).getSpeed());
@@ -182,7 +182,7 @@ class GameScreen extends JPanel implements MouseListener{
                     map.haniMapInit();
                 }
             } else if(state.getMoveFlag() == false && state.getBattleFlag() == false && state.getSummonFlag() == true && map.getHaniMapCode(array_x, array_y) == '1') {
-                BaseCharacter c =  state.getNowSummon();
+                BaseCharacter c =  state.getNowSummon();//召喚
                 if(state.getNowPlayer() == 1) {
                     if(state.getPlayer1Mana() - c.getCost() >= 0) {
                         state.setPlayer1Mana(c.getCost());
@@ -198,11 +198,11 @@ class GameScreen extends JPanel implements MouseListener{
                         c = null;
                     }
                 }    
-            } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false && state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer() && map.getCharaPosition(array_x, array_y).getMoveSelected()){
-                if(map.getCharaPosition(array_x, array_y) != null && flag == false && map.getCharaPosition(array_x, array_y).getBattleSelected() == false) {
+            } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){
+                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && ) {
                     tmpl = map.getCharaPosition(array_x, array_y);
                     map.paintButtleRange(array_x, array_y);
-                    flag = true;
+                    ButtleSelectflag = true;
                 } else if(flag == true && map.getHaniMapCode(array_x, array_y) == '1') {
                     BaseCharacter chara = map.getCharaPosition(array_x, array_y);
                     if(chara.getClassType() != 'E') {
@@ -549,17 +549,25 @@ class Map {//マップを生成するクラス
     public void paintSummonRange(int x, int y, int speed) {
         for(int i = 0; i <= speed; i++) {
             for(int j = 0; j <= speed; j++) {
-                if(i == 0 && j == 0) {
-                    continue;
+                if(0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength) {
+                    if(stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') {
+                        haniMapData[y+i][x+j] = '1';
+                    }
                 }
-                if(!(0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
-                    break;
+                if(0 <= x-j && x-j < horizontalLength && 0 <= y+i && y+i < verticalLength) {
+                    if(stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7') {
+                        haniMapData[y+i][x-j] = '1';
+                    }
                 }
-                boolean banTile = (stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7');
-                if(banTile == true){
-                    haniMapData[y+i][x+j] = '1';
-                } else {
-                    break;
+                if(0 <= x+j && x+j < horizontalLength && 0 <= y-i && y-i < verticalLength) {
+                    if(stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][x+j] == '7') {
+                        haniMapData[y-i][x+j] = '1';
+                    }
+                }
+                if(0 <= x-j && x-j < horizontalLength && 0 <= y-i && y-i < verticalLength) {
+                    if(stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7') {
+                        haniMapData[y-i][x-j] = '1';
+                    }
                 }
             }
         }
@@ -658,9 +666,6 @@ class Map {//マップを生成するクラス
     public void paintButtleRange(int x, int y) {
         for(int i = 0; i <= 1; i++) {
             for(int j = 0; j <= 1; j++) {
-                if(i == 0 && j == 0) {
-                    continue;
-                }
                 if((0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
                     haniMapData[y+i][x+j] = '1';
                 }
