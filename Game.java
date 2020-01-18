@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.nio.file.Paths;
 import java.awt.Color;
+import java.util.Random;
 import java.io.FileWriter;
 class GameState {//ゲームの全体の状態を統括。大体目に見えない部分を処理
     private boolean moveFlag;//カーソルの判定が移動になってるか
@@ -19,6 +20,7 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
     private int nowPlayer;//今操作を行えるプレイヤーを表す
     private BaseCharacter nowSummon;//今召喚カーソルをクリックして召喚できるキャラクターを表す
     private char nowTile = '.';
+    private boolean makegraphic = true;
     public GameState() {//コンストラクタ初期マナと初期プレイヤーとかを設定
         moveFlag = false;
         summonFlag = false;
@@ -87,8 +89,14 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
     public BaseCharacter getNowSummon() {//今召喚するキャラを取得
         return nowSummon;
     }
+    public void setMakeGraphic(boolean flag) {
+        makegraphic = flag;
+    }
+    public boolean getMakeGraphic() {
+        return makegraphic;
+    } 
 }
-class GameScreen extends JPanel implements MouseListener{
+class GameScreen extends JPanel implements MouseListener,ActionListener{
     static final int startX = 0;//画面の位置を調整するもの
     static final int startY = 0;//画面の一を調整するもの
     int x;
@@ -101,6 +109,7 @@ class GameScreen extends JPanel implements MouseListener{
     int rect_x = 0;//カーゾルの位置を記憶するもの
     int rect_y = 0;
     char tmp;
+    private Timer timer;
     boolean ButtleSelectflag = false;
     BaseCharacter tmpl;
     Color rectColor = Color.red;
@@ -109,8 +118,11 @@ class GameScreen extends JPanel implements MouseListener{
     BufferedImage mapImage;//マップの画像を記憶する物
     BufferedImage charaImage;//キャラの画像を記憶する物
     BufferedImage panelImage;//範囲選択の際に染めたものを記録するもの
-    Map map = new Map("map1.txt");
-    public GameScreen() throws IOException {
+    Map map = new Map("map6.txt");
+    BaseCharacter characterTmp = new Kyoten(32, 32, 1);
+    int step = 1;
+    public GameScreen(String file) throws IOException {
+        map = new Map(file);
         mapImage = createImage("MapTile.png", 1);
         charaImage = createImage("キャラクター.png", 2);
         panelImage = createImage("Hani.png", 3);
@@ -124,15 +136,28 @@ class GameScreen extends JPanel implements MouseListener{
         this.y = TileSize * (startY);
     }
     public void paintComponent(Graphics g){
-        super.paintComponent(g);
-        try {
-            charaImage = createImage("キャラクター.png", 2);
-            panelImage = createImage("Hani.png", 3);
-        } catch (Exception e) {
-            //TODO: handle exception
-        }
         g.drawImage(mapImage, 0, 0, this);
-        g.drawImage(charaImage, 0, 0, this);
+        for(int i = 0; i < map.getListSize(1); i++) {
+            try {
+                g.drawImage(map.getList(1).get(i).getGraphic(),map.getList(1).get(i).getPosition().x, map.getList(1).get(i).getPosition().y, this);     
+            } catch (Exception e) {
+                //TODO: handle exception
+            }
+        }
+        for(int i = 0; i < map.getListSize(2); i++) {
+            try {
+                g.drawImage(map.getList(2).get(i).getGraphic(), map.getList(2).get(i).getPosition().x, map.getList(2).get(i).getPosition().y, this);            
+            } catch (Exception e) {
+                //TODO: handle exception
+            }
+        }
+        if(state.getMakeGraphic() == true) {
+            try {
+                panelImage = createImage("Hani.png", 3);
+            } catch (Exception e) {
+                //TODO: handle exception
+            }
+        }
         g.drawImage(panelImage, 0, 0, this);
         if(state.getMoveFlag() == true || state.getBattleFlag() == true || state.getSummonFlag() == true) {
             g.setColor(rectColor);
@@ -162,6 +187,42 @@ class GameScreen extends JPanel implements MouseListener{
         }
         return bi;
     }
+    public void actionPerformed(ActionEvent e){
+        boolean upOrdown = true;
+        boolean leftOrright = true;
+        if(rect_y - characterTmp.getPosition().y < 0) {
+            upOrdown = false;
+        }
+        if(rect_x - characterTmp.getPosition().x < 0) {
+            leftOrright = false;
+        }
+        if(upOrdown == true && step == 1) {
+            characterTmp.setDirection(0);
+            characterTmp.move(characterTmp.getPosition().x, characterTmp.getPosition().y+4);
+        } else if(upOrdown == false && step == 1) {
+            characterTmp.setDirection(3);
+            characterTmp.move(characterTmp.getPosition().x, characterTmp.getPosition().y-4);
+        }
+        if(leftOrright == true && step == 2){
+            characterTmp.move(characterTmp.getPosition().x+4, characterTmp.getPosition().y);
+        } else if(leftOrright == false && step == 2) {
+            characterTmp.move(characterTmp.getPosition().x-4, characterTmp.getPosition().y);
+        }
+        if(characterTmp.getPosition().y == rect_y) {
+            if(leftOrright == true) {
+                characterTmp.setDirection(2);
+            } else {
+                characterTmp.setDirection(1);
+            }
+            step = 2;
+        }
+        if(characterTmp.getPosition().x == rect_x && characterTmp.getPosition().y == rect_y) {
+            step = 1;
+            state.setMakeGraphic(true);
+            timer.stop();
+        }
+        repaint();
+    }
     public void mouseClicked(MouseEvent e) {
         int btn = e.getButton();
         Point point = e.getPoint();
@@ -176,9 +237,10 @@ class GameScreen extends JPanel implements MouseListener{
                     map.paintMoveRange(array_x, array_y, map.getCharaPosition(array_x, array_y).getSpeed());
                     map.setCharaFlag(true);
                 }else if(map.getCharaMapCode(array_x, array_y) == '.' &&  map.getHaniMapCode(array_x, array_y) == '1') {
-                    BaseCharacter c = map.getCharaPosition(tmp_x/32, tmp_y/32);
-                    c.move(rect_x, rect_y);
-                    c.setMoveSelected(true);
+                    characterTmp = map.getCharaPosition(tmp_x/32, tmp_y/32);
+                    state.setMakeGraphic(false);
+                    timer = new Timer(10, this);
+                    timer.start();
                     map.haniMapInit();
                 }
             } else if(state.getMoveFlag() == false && state.getBattleFlag() == false && state.getSummonFlag() == true && map.getHaniMapCode(array_x, array_y) == '1') {
@@ -228,9 +290,7 @@ class GameScreen extends JPanel implements MouseListener{
             rect_flag = false;
         }else if (btn == MouseEvent.BUTTON2){
         }
-        map.charaMapInit();
         map.charaPositionInit();
-
         repaint();
     }
     public void mouseReleased(MouseEvent e){ }
@@ -249,6 +309,7 @@ class BaseCharacter {
     private String imagePath;//キャラのグラフィックの実装を変えたとき陽
     private String name; //キャラの名前
     private int player;//プレイヤー1か2か
+    BufferedImage [] icon = new BufferedImage [4];
     BufferedImage graphic;
     private char classType;//キャラクターを表す記号。いまのところこれとタイルを対応させてる
     private int speed;//何マス動けるか
@@ -268,6 +329,11 @@ class BaseCharacter {
         this.attackToBuilding = attackToBuilding;
         this.speed = speed;
         this.cost = cost;
+        try {
+            setGraphic(classType); 
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
         moveSelected = false;
         battleSelected = false;
     }
@@ -337,8 +403,66 @@ class BaseCharacter {
     public void setBattleSelected(boolean flag) {
         battleSelected = flag;
     }
-    public void setGraphic(String filepath) throws IOException{//ここ使うか未定
-        this.graphic =  ImageIO.read(new File(filepath));
+    public void setGraphic(char character) throws IOException{//
+        ImportTile tile = null;
+        if(character == '0') {
+            if(player == 1) {
+                tile = new ImportTile("キャラ1A.png");
+            } else {
+                tile = new ImportTile("キャラ1B.png");
+            }
+        } else if(character == '1') {
+            if(player == 1) {
+                tile = new ImportTile("キャラ2A.png");
+            } else {
+                tile = new ImportTile("キャラ2B.png");
+            }
+        } else if(character == '2') {
+            if(player == 1) {
+                tile = new ImportTile("キャラ3A.png");
+            } else {
+                tile = new ImportTile("キャラ3B.png");
+            }
+        } else if(character == '3') {
+            if(player == 1) {
+                tile = new ImportTile("キャラ4A.png");
+            } else {
+                tile = new ImportTile("キャラ4B.png");
+            }
+        } else if(character == '4') {
+            if(player == 1) {
+                tile = new ImportTile("キャラ5A.png");
+            } else {
+                tile = new ImportTile("キャラ5B.png");
+            }
+        }
+        else if(character == 'E') {
+            tile = new ImportTile("キャラクター.png");
+            if(player == 1) {
+                icon[0] = tile.getTile('D'); 
+                icon[1] = tile.getTile('D'); 
+                icon[2] = tile.getTile('D');
+                icon[3] = tile.getTile('D'); 
+            } else {
+                icon[0] = tile.getTile('E'); 
+                icon[1] = tile.getTile('E'); 
+                icon[2] = tile.getTile('E');
+                icon[3] = tile.getTile('E'); 
+            }
+            graphic = icon[0];
+            return;
+        }
+        icon[0] = tile.getTile('0'); 
+        icon[1] = tile.getTile('4'); 
+        icon[2] = tile.getTile('8');
+        icon[3] = tile.getTile('C'); 
+        graphic = icon[0];
+    }
+    public BufferedImage getGraphic() throws IOException{
+        return graphic;
+    }
+    public void setDirection(int n) {
+        graphic = icon[n];
     }
 }
 class Ippan extends BaseCharacter {//一般大学生
@@ -493,6 +617,20 @@ class Map {//マップを生成するクラス
             character2.remove(chara);
         }
     }
+    public int getListSize(int player) {
+        if(player == 1) {
+            return character1.size();
+        } else {
+            return character2.size();
+        }
+    }
+    public ArrayList<BaseCharacter> getList(int player) {
+        if(player == 1) {
+            return character1;
+        } else {
+            return character2;
+        }
+    }
     public void reChracterMoveandBattle(int player) {
         if(player == 1) {
             for(int i = 0; i < character1.size(); i++) {
@@ -592,17 +730,19 @@ class Map {//マップを生成するクラス
         }
     }
     public void paintMoveRange(int x, int y, int speed) {//移動範囲を塗りつぶす。修正必須
-        boolean stopFlag = false;
+        boolean stopFlag = false;//
         for(int i = 0; i <= speed; i++) {
             for(int j = 0; j <= speed; j++) {
                 if((i == 0 && j == 0) || !(0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
                     continue;
                 }
-                boolean banTile = (stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7');
+                boolean banTile = ((stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') && charaPosition[y+i][x+j] == null);
                 if(banTile == true){
                     haniMapData[y+i][x+j] = '1';
-                } else {
+                } else if(banTile == true && j == 0){
                     stopFlag = true;
+                    break;
+                } else {
                     break;
                 }
             }
@@ -616,11 +756,13 @@ class Map {//マップを生成するクラス
                 if((i == 0 && j == 0) || !(0 <= x-j && x-j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
                     continue;
                 }
-                boolean banTile = (stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7');
+                boolean banTile = ((stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7') && charaPosition[y+i][x-j] == null);
                 if(banTile == true){
                     haniMapData[y+i][x-j] = '1';
-                } else {
+                } else if(banTile == true && j == 0){
                     stopFlag = true;
+                    break;
+                } else {
                     break;
                 }
             }
@@ -634,11 +776,13 @@ class Map {//マップを生成するクラス
                 if(!(0 <= x-j && x-j < horizontalLength && 0 <= y-i && y-i < verticalLength)) {
                     continue;
                 }
-                boolean banTile = (stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7');
+                boolean banTile = ((stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7') && charaPosition[y-i][x-j] == null);
                 if(banTile == true){
                     haniMapData[y-i][x-j] = '1';
-                } else {
+                } else if(banTile == true && j == 0){
                     stopFlag = true;
+                    break;
+                } else {
                     break;
                 }
             }
@@ -652,11 +796,13 @@ class Map {//マップを生成するクラス
                 if(!(0 <= x+j && x+j < horizontalLength && 0 <= y-i && y-i < verticalLength)) {
                     continue;
                 }
-                boolean banTile = (stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][y+j] == '7');
+                boolean banTile = ((stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][x+j] == '7') && charaPosition[y-i][x+j] == null);
                 if(banTile == true){
                     haniMapData[y-i][x+j] = '1';
-                } else {
+                } else if(banTile == true && j == 0){
                     stopFlag = true;
+                    break;
+                } else {
                     break;
                 }
             }
@@ -665,6 +811,7 @@ class Map {//マップを生成するクラス
                 break;
             }
         }
+        
     }
     public void paintButtleRange(int x, int y) {
         for(int i = 0; i <= 1; i++) {
@@ -685,7 +832,7 @@ class Map {//マップを生成するクラス
         }
     }
     public void saveMap() throws IOException{
-        File file = new File("map6.txt");
+        File file = new File("map5.txt");
         FileWriter filewriter = new FileWriter(file);
         for(int i = 0; i < verticalLength; ++i) {
             String s = new String(stageMapData[i]);
@@ -704,12 +851,49 @@ class Map {//マップを生成するクラス
         return c;
     }
     public void autoCreateMap() {
-//
+        for(int i = 0; i < horizontalLength; i++) {
+            for(int j = 0; j < verticalLength; j++) {
+                stageMapData[j][i] = '.';
+            }
+        }
+        Random rand = new Random();
+        for(int i = 0; i < 15; i++) {
+            int roomHeight = rand.nextInt(3) + 3;
+            int roomWidth = rand.nextInt(3) + 3;
+            int roomX = rand.nextInt((horizontalLength - 6 - 2)) + 2;
+            int roomY = rand.nextInt((verticalLength - 6 - 2)) + 2;
+            int n = rand.nextInt(3);
+            char c = '.';
+            if(n == 0) {
+                c = '3';
+            } else if(n == 1) {
+                c = '4';
+            } else if(n == 2) {
+                c = 'A';
+            }
+
+            for(int j = 0; j < roomHeight; j++) {
+                roomWidth = rand.nextInt(3) + 3;
+                for(int k = 0; k < roomWidth; k++) {
+                    if(roomX + k <= horizontalLength && roomY + j <= verticalLength) {
+                        stageMapData[roomY+j][roomX+k] = c;
+                    }
+                }
+            }
+            if(c == 'A') {
+                int m = rand.nextInt(4);
+                if(m == 0) {
+                    for(int j = 0 ; j < roomHeight; j++) {
+                        stageMapData[roomY+j][roomX+roomWidth/2] = '5';
+                    }
+                }
+            }
+        }
     }
 }
 class StageEditScreen extends GameScreen implements MouseListener{//エディタのViewにあたる部分
-    public StageEditScreen() throws IOException {
-        super();
+    public StageEditScreen(String file) throws IOException {
+        super(file);
     }
     @Override
     public void paintComponent(Graphics g){
@@ -753,10 +937,11 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
     JButton b [] = new JButton[16];
     JPanel p3;
     JPanel p4;
+    JButton autoMapCreate;
     ImportTile tile = new ImportTile("MapTile.png");
     public StageEditFrame() throws IOException {
         JPanel panel = new JPanel();
-        screen = new StageEditScreen();
+        screen = new StageEditScreen("map5.txt");
         panel.setLayout(new GridLayout(1, 1));
         panel.add(screen);
         JPanel  p1=new JPanel(),p2=new JPanel(), p3 = new JPanel();
@@ -776,10 +961,12 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
         b[13] = new JButton(new ImageIcon(tile.getTile('C')));
         b[14] = new JButton(new ImageIcon(tile.getTile('D')));
         b[15] = new JButton(new ImageIcon(tile.getTile('E')));
-
+        autoMapCreate = new JButton("自動生成");
         p1.setLayout(new GridLayout(4,1));
         p2.setLayout(new GridLayout(4,4));
         p3.setLayout(new GridLayout(1, 1));
+        p3.add(autoMapCreate);
+        autoMapCreate.addActionListener(this);
         p3.add(save);
         for(int i = 0; i < 16; i++) {
             b[i].addActionListener(this);;
@@ -834,7 +1021,9 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
             } catch (Exception IE) {
                 //TODO: handle exception
             }
-
+        } else if(e.getSource() == autoMapCreate) {
+            screen.map.autoCreateMap();
+            screen.repaint();
         }
     }
 }
@@ -852,9 +1041,9 @@ class GameFrame extends JFrame implements ActionListener{
     JPanel p3;
     JPanel p4;
     JLabel cost;
-    public GameFrame() throws IOException {
+    public GameFrame(String file) throws IOException {
         JPanel panel = new JPanel();
-        screen = new GameScreen();
+        screen = new GameScreen(file);
         panel.setLayout(new GridLayout(1, 1));
         panel.add(screen);
         JPanel  p1=new JPanel(),p2=new JPanel();
@@ -933,6 +1122,7 @@ class GameFrame extends JFrame implements ActionListener{
         screen.repaint();
     }
     public static void main(String[] args) throws IOException {
-        new StageEditFrame();
+        new GameFrame("map5.txt");
     }
 }
+
