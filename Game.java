@@ -202,17 +202,18 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
         } else if(upOrdown == false && step == 1) {
             characterTmp.setDirection(3);
             characterTmp.move(characterTmp.getPosition().x, characterTmp.getPosition().y-4);
-        }
-        if(leftOrright == true && step == 2){
+        } else if(leftOrright == true && step == 2){
             characterTmp.move(characterTmp.getPosition().x+4, characterTmp.getPosition().y);
         } else if(leftOrright == false && step == 2) {
             characterTmp.move(characterTmp.getPosition().x-4, characterTmp.getPosition().y);
         }
         if(characterTmp.getPosition().y == rect_y) {
-            if(leftOrright == true) {
-                characterTmp.setDirection(2);
-            } else {
-                characterTmp.setDirection(1);
+            if(rect_x != characterTmp.getPosition().x) {
+                if(leftOrright == true) {
+                    characterTmp.setDirection(2);
+                } else {
+                    characterTmp.setDirection(1);
+                }
             }
             step = 2;
         }
@@ -235,13 +236,13 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                 if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getMoveSelected() == false && state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer()) {
                     tmp_x = rect_x; tmp_y = rect_y;
                     map.paintMoveRange(array_x, array_y, map.getCharaPosition(array_x, array_y).getSpeed());
-                    map.setCharaFlag(true);
                 }else if(map.getCharaMapCode(array_x, array_y) == '.' &&  map.getHaniMapCode(array_x, array_y) == '1') {
                     characterTmp = map.getCharaPosition(tmp_x/32, tmp_y/32);
                     state.setMakeGraphic(false);
                     timer = new Timer(10, this);
                     timer.start();
                     map.haniMapInit();
+                    characterTmp.setMoveSelected(true);
                 }
             } else if(state.getMoveFlag() == false && state.getBattleFlag() == false && state.getSummonFlag() == true && map.getHaniMapCode(array_x, array_y) == '1') {
                 BaseCharacter c =  state.getNowSummon();//召喚
@@ -268,21 +269,24 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     }
                     map.paintButtleRange(array_x, array_y);
                     ButtleSelectflag = true;
-                } else if(ButtleSelectflag == true && map.getHaniMapCode(array_x, array_y) == '1') {
+                } else if(ButtleSelectflag == true && map.getHaniMapCode(array_x, array_y) == '1' && map.getCharaPosition(array_x, array_y) != null) {
                     BaseCharacter chara = map.getCharaPosition(array_x, array_y);
-                    if(chara.getClassType() != 'E') {
+                    if(chara.getClassType() != 'E' || chara.getClassType() != 'D') {
                         chara.giveDamage(tmpl.getAttackPoint());
                     } else {
                         chara.giveDamage(tmpl.getAttackToBuilding());
                     }
                     if(chara.isDead() == true) {
-                        if(chara.getClassType() != 'E')
+                        if(chara.getClassType() != 'E' || chara.getClassType() != 'D') {
                         map.deleteCharacter(chara, chara.getPlayer());
-                    } else {
+                        } else {
                         map.deleteCharacter(chara, chara.getPlayer());
                         //ゲームセット
+                        System.exit(0);
+                        }
                     }
                     ButtleSelectflag = false;
+                    tmpl.setBattleSelected(true);
                     map.haniMapInit();
                 }
             }
@@ -527,7 +531,6 @@ class Map {//マップを生成するクラス
     private char [][] haniMapData;//移動の選択したときに移動できる範囲を塗りつぶすために半透明のパネルを表示するためのの配列
     private int horizontalLength;//マップの横の長さ
     private int verticalLength;//マップの縦の長さ
-    private boolean charaFlag = false;
     private ArrayList<BaseCharacter> character1 = new ArrayList<BaseCharacter>();//プレイヤー1のキャラを格納するリスト
     private ArrayList<BaseCharacter> character2 = new ArrayList<BaseCharacter>();//プレイヤー2のキャラを格納するリスト
     public Map(String stageMapFile) {
@@ -678,12 +681,6 @@ class Map {//マップを生成するクラス
     public int getVerticalLength() {//縦の長さを返す
         return verticalLength;
     }
-    public void setCharaFlag(boolean flag) {//これなんだっけ
-        charaFlag = flag;
-    }
-    public boolean getCharaFlag() {
-        return charaFlag;
-    }
     public BaseCharacter getCharaPosition(int x, int y) {//キャラそのものが入ってる配列を返す
         return charaPosition[y][x];
     }
@@ -691,40 +688,24 @@ class Map {//マップを生成するクラス
         for(int i = 0; i <= speed; i++) {
             for(int j = 0; j <= speed; j++) {
                 if(0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength) {
-                    if(stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') {
+                    if((stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') && charaPosition[y+i][x+j] == null) {
                         haniMapData[y+i][x+j] = '1';
                     }
                 }
                 if(0 <= x-j && x-j < horizontalLength && 0 <= y+i && y+i < verticalLength) {
-                    if(stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7') {
+                    if((stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7') && charaPosition[y+i][x-j] == null) {
                         haniMapData[y+i][x-j] = '1';
                     }
                 }
                 if(0 <= x+j && x+j < horizontalLength && 0 <= y-i && y-i < verticalLength) {
-                    if(stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][x+j] == '7') {
+                    if((stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][x+j] == '7') && charaPosition[y-i][x+j] == null) {
                         haniMapData[y-i][x+j] = '1';
                     }
                 }
                 if(0 <= x-j && x-j < horizontalLength && 0 <= y-i && y-i < verticalLength) {
-                    if(stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7') {
+                    if((stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7') && charaPosition[y-i][x-j] == null) {
                         haniMapData[y-i][x-j] = '1';
                     }
-                }
-            }
-        }
-        for(int i = 0; i <= speed; i++) {
-            for(int j = 0; j <= speed; j++) {
-                if(i == 0 && j == 0) {
-                    continue;
-                }
-                if(!(0 <= x-j && x-j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
-                    break;
-                }
-                boolean banTile = (stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7');
-                if(banTile == true){
-                    haniMapData[y+i][x-j] = '1';
-                } else {
-                    break;
                 }
             }
         }
@@ -739,7 +720,7 @@ class Map {//マップを生成するクラス
                 boolean banTile = ((stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') && charaPosition[y+i][x+j] == null);
                 if(banTile == true){
                     haniMapData[y+i][x+j] = '1';
-                } else if(banTile == true && j == 0){
+                } else if(banTile == false && j == 0){
                     stopFlag = true;
                     break;
                 } else {
@@ -759,7 +740,7 @@ class Map {//マップを生成するクラス
                 boolean banTile = ((stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7') && charaPosition[y+i][x-j] == null);
                 if(banTile == true){
                     haniMapData[y+i][x-j] = '1';
-                } else if(banTile == true && j == 0){
+                } else if(banTile == false && j == 0){
                     stopFlag = true;
                     break;
                 } else {
@@ -779,7 +760,7 @@ class Map {//マップを生成するクラス
                 boolean banTile = ((stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7') && charaPosition[y-i][x-j] == null);
                 if(banTile == true){
                     haniMapData[y-i][x-j] = '1';
-                } else if(banTile == true && j == 0){
+                } else if(banTile == false && j == 0){
                     stopFlag = true;
                     break;
                 } else {
@@ -799,7 +780,7 @@ class Map {//マップを生成するクラス
                 boolean banTile = ((stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][x+j] == '7') && charaPosition[y-i][x+j] == null);
                 if(banTile == true){
                     haniMapData[y-i][x+j] = '1';
-                } else if(banTile == true && j == 0){
+                } else if(banTile == false && j == 0){
                     stopFlag = true;
                     break;
                 } else {
@@ -816,6 +797,9 @@ class Map {//マップを生成するクラス
     public void paintButtleRange(int x, int y) {
         for(int i = 0; i <= 1; i++) {
             for(int j = 0; j <= 1; j++) {
+                if(i == 0 && j == 0) {
+                    continue;
+                }
                 if((0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
                     haniMapData[y+i][x+j] = '1';
                 }
@@ -1125,4 +1109,3 @@ class GameFrame extends JFrame implements ActionListener{
         new GameFrame("map5.txt");
     }
 }
-
