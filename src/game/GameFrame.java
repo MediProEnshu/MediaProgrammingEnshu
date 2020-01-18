@@ -1,3 +1,5 @@
+package game;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -11,6 +13,7 @@ import java.nio.file.Paths;
 import java.awt.Color;
 import java.util.Random;
 import java.io.FileWriter;
+
 class GameState {//ゲームの全体の状態を統括。大体目に見えない部分を処理
     private boolean moveFlag;//カーソルの判定が移動になってるか
     private boolean summonFlag;//カーソルの判定が召喚になってるか
@@ -96,6 +99,7 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
         return makegraphic;
     }
 }
+
 class GameScreen extends JPanel implements MouseListener,ActionListener{
     static final int startX = 0;//画面の位置を調整するもの
     static final int startY = 0;//画面の一を調整するもの
@@ -118,14 +122,14 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     BufferedImage mapImage;//マップの画像を記憶する物
     BufferedImage charaImage;//キャラの画像を記憶する物
     BufferedImage panelImage;//範囲選択の際に染めたものを記録するもの
-    Map map = new Map("map6.txt");
+    Map map = new Map("game/map6.txt");
     BaseCharacter characterTmp = new Kyoten(32, 32, 1);
     int step = 1;
     public GameScreen(String file) throws IOException {
         map = new Map(file);
-        mapImage = createImage("MapTile.png", 1);
-        charaImage = createImage("キャラクター.png", 2);
-        panelImage = createImage("Hani.png", 3);
+        mapImage = createImage("game/MapTile.png", 1);
+        charaImage = createImage("game/Character.png", 2);
+        panelImage = createImage("game/Hani.png", 3);
         width = mapImage.getWidth();//サイズ設定
         height = mapImage.getHeight();
         addMouseListener(this);
@@ -141,21 +145,21 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
             try {
                 g.drawImage(map.getList(1).get(i).getGraphic(),map.getList(1).get(i).getPosition().x, map.getList(1).get(i).getPosition().y, this);
             } catch (Exception e) {
-                //TODO: handle exception
+                System.err.println("ErrorInDrawImage");
             }
         }
         for(int i = 0; i < map.getListSize(2); i++) {
             try {
                 g.drawImage(map.getList(2).get(i).getGraphic(), map.getList(2).get(i).getPosition().x, map.getList(2).get(i).getPosition().y, this);
             } catch (Exception e) {
-                //TODO: handle exception
+                System.err.println("ErrorInDrawImage");
             }
         }
         if(state.getMakeGraphic() == true) {
             try {
-                panelImage = createImage("Hani.png", 3);
+                panelImage = createImage("game/Hani.png", 3);
             } catch (Exception e) {
-                //TODO: handle exception
+                System.err.println("ErrorInCreateImage");
             }
         }
         g.drawImage(panelImage, 0, 0, this);
@@ -336,7 +340,7 @@ class BaseCharacter {
         try {
             setGraphic(classType);
         } catch (Exception e) {
-            //TODO: handle exception
+            System.err.println("ErrorInSetGraphic");
         }
         moveSelected = false;
         battleSelected = false;
@@ -441,7 +445,7 @@ class BaseCharacter {
             }
         }
         else if(character == 'E') {
-            tile = new ImportTile("キャラクター.png");
+            tile = new ImportTile("game/Character.png");
             if(player == 1) {
                 icon[0] = tile.getTile('D');
                 icon[1] = tile.getTile('D');
@@ -816,7 +820,7 @@ class Map {//マップを生成するクラス
         }
     }
     public void saveMap() throws IOException{
-        File file = new File("map5.txt");
+        File file = new File("game/map5.txt");
         FileWriter filewriter = new FileWriter(file);
         for(int i = 0; i < verticalLength; ++i) {
             String s = new String(stageMapData[i]);
@@ -875,6 +879,7 @@ class Map {//マップを生成するクラス
         }
     }
 }
+
 class StageEditScreen extends GameScreen implements MouseListener{//エディタのViewにあたる部分
     public StageEditScreen(String file) throws IOException {
         super(file);
@@ -884,7 +889,7 @@ class StageEditScreen extends GameScreen implements MouseListener{//エディタ
         try {
             mapImage = createImage("MapTile.png", 1);
         } catch (Exception e) {
-            //TODO: handle exception
+            System.err.println("ErrorInCreateImage(Map)");
         }
         g.drawImage(mapImage, 0, 0, this);
         g.setColor(rectColor);
@@ -922,10 +927,10 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
     JPanel p3;
     JPanel p4;
     JButton autoMapCreate;
-    ImportTile tile = new ImportTile("MapTile.png");
+    ImportTile tile = new ImportTile("game/MapTile.png");
     public StageEditFrame() throws IOException {
         JPanel panel = new JPanel();
-        screen = new StageEditScreen("map5.txt");
+        screen = new StageEditScreen("game/map5.txt");
         panel.setLayout(new GridLayout(1, 1));
         panel.add(screen);
         JPanel  p1=new JPanel(),p2=new JPanel(), p3 = new JPanel();
@@ -1003,7 +1008,7 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
             try {
                 screen.map.saveMap();
             } catch (Exception IE) {
-                //TODO: handle exception
+                System.err.println("ErrorInSaveMap");
             }
         } else if(e.getSource() == autoMapCreate) {
             screen.map.autoCreateMap();
@@ -1016,7 +1021,7 @@ class GameFrame extends JFrame implements ActionListener{
     GameScreen screen;
     JButton b1=new JButton("召喚"),b2=new JButton("移動");
     JButton b3=new JButton("攻撃"),b4=new JButton("ターンエンド");
-    ImportTile tile = new ImportTile("キャラクター.png");
+    ImportTile tile = new ImportTile("game/Character.png");
     JButton b5=new JButton(new ImageIcon(tile.getTile('0')));
     JButton b6=new JButton(new ImageIcon(tile.getTile('1')));
     JButton b7=new JButton(new ImageIcon(tile.getTile('2')));
@@ -1106,6 +1111,6 @@ class GameFrame extends JFrame implements ActionListener{
         screen.repaint();
     }
     public static void main(String[] args) throws IOException {
-        new GameFrame("map5.txt");
+        new GameFrame("game/map5.txt");
     }
 }
