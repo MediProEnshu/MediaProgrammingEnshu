@@ -122,7 +122,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     BufferedImage mapImage;//マップの画像を記憶する物
     BufferedImage charaImage;//キャラの画像を記憶する物
     BufferedImage panelImage;//範囲選択の際に染めたものを記録するもの
-    Map map = new Map("game/map6.txt");
+    Map map;
     BaseCharacter characterTmp = new Kyoten(32, 32, 1);
     int step = 1;
     public GameScreen(String file) throws IOException {
@@ -324,6 +324,7 @@ class BaseCharacter {
     private int cost;//召喚するのにマナいくつ必要か
     private boolean moveSelected;//移動したか。1ターンに移動は一回だけ.trueはし終わった状態を指す
     private boolean battleSelected;//攻撃したか//1ターンに攻撃は1回だけ
+
     public BaseCharacter(int hp, String name, int x, int y,int player, char classType, int attackPoint, int attackToBuilding, int speed, int cost) {
         if(hp < 0){ hp = 0; } // 不適切なヒットポイントの修正
         maxHitPoint = hp;
@@ -415,33 +416,33 @@ class BaseCharacter {
         ImportTile tile = null;
         if(character == '0') {
             if(player == 1) {
-                tile = new ImportTile("キャラ1A.png");
+                tile = new ImportTile("game/Chara1A.png");
             } else {
-                tile = new ImportTile("キャラ1B.png");
+                tile = new ImportTile("game/Chara1B.png");
             }
         } else if(character == '1') {
             if(player == 1) {
-                tile = new ImportTile("キャラ2A.png");
+                tile = new ImportTile("game/Chara2A.png");
             } else {
-                tile = new ImportTile("キャラ2B.png");
+                tile = new ImportTile("game/Chara2B.png");
             }
         } else if(character == '2') {
             if(player == 1) {
-                tile = new ImportTile("キャラ3A.png");
+                tile = new ImportTile("game/Chara3A.png");
             } else {
-                tile = new ImportTile("キャラ3B.png");
+                tile = new ImportTile("game/Chara3B.png");
             }
         } else if(character == '3') {
             if(player == 1) {
-                tile = new ImportTile("キャラ4A.png");
+                tile = new ImportTile("game/Chara4A.png");
             } else {
-                tile = new ImportTile("キャラ4B.png");
+                tile = new ImportTile("game/Chara4B.png");
             }
         } else if(character == '4') {
             if(player == 1) {
-                tile = new ImportTile("キャラ5A.png");
+                tile = new ImportTile("game/Chara5A.png");
             } else {
-                tile = new ImportTile("キャラ5B.png");
+                tile = new ImportTile("game/Chara5B.png");
             }
         }
         else if(character == 'E') {
@@ -820,7 +821,7 @@ class Map {//マップを生成するクラス
         }
     }
     public void saveMap() throws IOException{
-        File file = new File("game/map5.txt");
+        File file = new File("map5.txt");
         FileWriter filewriter = new FileWriter(file);
         for(int i = 0; i < verticalLength; ++i) {
             String s = new String(stageMapData[i]);
@@ -1111,6 +1112,6 @@ class GameFrame extends JFrame implements ActionListener{
         screen.repaint();
     }
     public static void main(String[] args) throws IOException {
-        new GameFrame("game/map5.txt");
+        new GameFrame("map5.txt");
     }
 }
