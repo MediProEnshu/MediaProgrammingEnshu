@@ -21,10 +21,10 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
     private int player2Mana;//プレイヤー2の残りマナ
     private int nowPlayer;//今操作を行えるプレイヤーを表す
     private BaseCharacter nowSummon;//今召喚カーソルをクリックして召喚できるキャラクターを表す
-    private char nowTile = '.';
+    private char nowTile = '.';//マップエディタで何のタイルを上書きするか決めるもの
     private boolean makegraphic = true;
-    DynamicTextModel manaTextModel;
-    private int deathPlayer1Character;
+    DynamicTextModel manaTextModel;//マナの表示に関わるモデル
+    private int deathPlayer1Character;//リザルト画面で使う死亡数
     private int deathPlayer2Character;
     public GameState() {//コンストラクタ初期マナと初期プレイヤーとかを設定
         moveFlag = false;
@@ -37,22 +37,22 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
         deathPlayer2Character = 0;
         manaTextModel = new DynamicTextModel("player1のマナ" + player1Mana + "player2のマナ" + player2Mana);
     }
-    public void setMove() {
+    public void setMove() {//スイッチを押したときに移動できる状態にする
         moveFlag = true;
         summonFlag = false;
         battleFlag = false;
     }
-    public void setSummon() {
+    public void setSummon() {//スイッチを押したときに召喚できる状態にする
         moveFlag = false;
         summonFlag = true;
         battleFlag = false;
     }
-    public void setBattle() {
+    public void setBattle() {//スイッチを押したときに戦闘できる状態にする
         moveFlag = false;
         summonFlag = false;
         battleFlag = true;
     }
-    public boolean getMoveFlag() {
+    public boolean getMoveFlag() {//各getter
         return moveFlag;
     }
     public boolean getSummonFlag() {
@@ -61,10 +61,10 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
     public boolean getBattleFlag() {
         return battleFlag;
     }
-    public void setNowPlayer(int player) {
+    public void setNowPlayer(int player) {//現在操作してるプレイヤーは誰かセットする
         nowPlayer = player;
     }
-    public int getNowPlayer() {
+    public int getNowPlayer() {//現在操作しているプレイヤーは誰か返す
         return nowPlayer;
     }
     public void setPlayer1Mana(int cost) {//マナの加減算処理(プレイヤー１)
@@ -90,22 +90,22 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
     public void setNowSummon(BaseCharacter character) {//召喚ボタンを押してキャラクターをクリックした後に処理
         nowSummon = character;
     }
-    public void setNowTile(char tile) {
+    public void setNowTile(char tile) {//マップエディタでつかういまクリックしたときになんのタイルを置くかセットする
         nowTile = tile;
     }
-    public char getNowTile() {
+    public char getNowTile() {//クリックしたときに何のタイルがおかれるか取得する
         return nowTile;
     }
     public BaseCharacter getNowSummon() {//今召喚するキャラを取得
         return nowSummon;
     }
-    public void setMakeGraphic(boolean flag) {
+    public void setMakeGraphic(boolean flag) {//半透明な選択範囲の画像を描画するかしないか。処理軽減のためにある
         makegraphic = flag;
     }
-    public boolean getMakeGraphic() {
+    public boolean getMakeGraphic() {//半透明な選択範囲の画像を描画するかしないか取得する
         return makegraphic;
     }
-    public void setDeathCharacter(int player) {
+    public void setDeathCharacter(int player) {//キャラクターが死んだときに数を増やす
         if(player == 1) {
             deathPlayer1Character++;
         } else {
@@ -114,10 +114,7 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
     }
 }
 class GameScreen extends JPanel implements MouseListener,ActionListener{
-    static final int startX = 4;//画面の位置を調整するもの
-    static final int startY = 4;//画面の一を調整するもの
-    int x;
-    int y;
+    /*この辺の変数Gの一部ameStateに置いたほうがいいんじゃね？*/
     int tmp_x;//移動の際に移動元のマスを記憶するもの
     int tmp_y;//同上
     int width = 0;//画面のサイズ
@@ -125,60 +122,58 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     int TileSize = 32;//タイルの大きさ
     int rect_x = 0;//カーゾルの位置を記憶するもの
     int rect_y = 0;
-    char tmp;
-    private Timer timer;
-    boolean ButtleSelectflag = false;
-    BaseCharacter tmpl;
+    private Timer timer;//アニメーション陽
+    boolean battleSelectflag = false;
+    BaseCharacter battleCharacter;
     Color rectColor = Color.red;
     GameState state = new GameState();
     boolean rect_flag = false;//カーソルを画面に表示するかしないか
     BufferedImage mapImage;//マップの画像を記憶する物
     BufferedImage charaImage;//キャラの画像を記憶する物
-    BufferedImage panelImage;//範囲選択の際に染めたものを記録するもの
-    Map map = new Map("map6.txt");
-    BaseCharacter characterTmp = new Kyoten(32, 32, 1);
-    DynamicTextModel modelTextLog = new DynamicTextModel("テキストログ");
-    DynamicTextModel modelMapInfo = new DynamicTextModel(" ");
-    int step = 1;
+    BufferedImage haniImage;//範囲選択の際に染めたものを記録するもの
+    Map map = new Map("map6.txt");//マップの初期化
+    BaseCharacter characterTmp = new Kyoten(32, 32, 1);//これも
+    DynamicTextModel modelTextLog = new DynamicTextModel("テキストログ");//テキストログのモデル
+    DynamicTextModel modelMapInfo = new DynamicTextModel(" ");//マップ情報を出すラベルのモデル
+    int step = 1;//移動の時に使う。ステップ一が縦移動でステップ2が横移動
     public GameScreen(String file) throws IOException {
         map = new Map(file);
         mapImage = createImage("MapTile.png", 1);
-        panelImage = createImage("Hani.png", 3);
+        haniImage = createImage("Hani.png", 3);
         width = mapImage.getWidth();//サイズ設定
         height = mapImage.getHeight();
         addMouseListener(this);
-        setBackground(Color.RED);
     }
     public void paintComponent(Graphics g){
-        g.drawImage(mapImage, 0, 0, this);
-        for(int i = 0; i < map.getListSize(1); i++) {
+        g.drawImage(mapImage, 0, 0, this);//マップを描画
+        for(int i = 0; i < map.getListSize(1); i++) {//プレイヤー1のキャラクターを描画
             try {
                 g.drawImage(map.getList(1).get(i).getGraphic(),map.getList(1).get(i).getPosition().x, map.getList(1).get(i).getPosition().y, this);     
             } catch (Exception e) {
                 //TODO: handle exception
             }
         }
-        for(int i = 0; i < map.getListSize(2); i++) {
+        for(int i = 0; i < map.getListSize(2); i++) {//プレイヤー2のキャラを描画
             try {
                 g.drawImage(map.getList(2).get(i).getGraphic(), map.getList(2).get(i).getPosition().x, map.getList(2).get(i).getPosition().y, this);            
             } catch (Exception e) {
                 //TODO: handle exception
             }
         }
-        if(state.getMakeGraphic() == true) {
+        if(state.getMakeGraphic() == true) {//移動範囲・召喚範囲を描画しないといけないときには新しい画像で描画する。移動のアニメーション中は処理が重いので新しい画像にしない
             try {
-                panelImage = createImage("Hani.png", 3);
+                haniImage = createImage("Hani.png", 3);
             } catch (Exception e) {
                 //TODO: handle exception
             }
         }
-        g.drawImage(panelImage, 0, 0, this);
-        if(state.getMoveFlag() == true || state.getBattleFlag() == true || state.getSummonFlag() == true) {
+        g.drawImage(haniImage, 0, 0, this);//範囲を描画する
+        if(state.getMoveFlag() == true || state.getBattleFlag() == true || state.getSummonFlag() == true) {//カーソルの描画
             g.setColor(rectColor);
             g.drawRect(rect_x, rect_y, TileSize, TileSize);
         }
     }
-    public BufferedImage createImage(String fileName, int type) throws IOException{//マップを
+    public BufferedImage createImage(String fileName, int type) throws IOException{//配列から画像を生成する
         BufferedImage bi = new BufferedImage(TileSize * 124, TileSize * 120, BufferedImage.TYPE_INT_ARGB);
         Graphics g = bi.getGraphics();
         ImportTile tileset = new ImportTile(fileName);//タイルセットを呼び出す
@@ -189,9 +184,9 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
             int gY = 0;
             for (int y = 0; y < verticalLength; y++) {
                 if(type == 1) {
-                    g.drawImage(tileset.getTile(map.getStageMapCode(x, y)), gX, gY, null);//描画
+                    g.drawImage(tileset.getTile(map.getStageMapCode(x, y)), gX, gY, null);//マップの描画
                 } else {
-                    g.drawImage(tileset.getTile(map.getHaniMapCode(x, y)), gX, gY, null);//描画                   
+                    g.drawImage(tileset.getTile(map.getHaniMapCode(x, y)), gX, gY, null);//選択範囲の描画          
                 }
                 gY += TileSize;//タイルの大きさ分横にずらす
             }
@@ -199,127 +194,132 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
         }
         return bi;
     }
-    public void actionPerformed(ActionEvent e){
-        boolean upOrdown = true;
-        boolean leftOrright = true;
-        if(rect_y - characterTmp.getPosition().y < 0) {
-            upOrdown = false;
+    public void actionPerformed(ActionEvent e){//移動の時のアニメーション
+        boolean upOrDown = true;//上に行くか下に行くか.trueは下
+        boolean leftOrRight = true;//右に行くか左に行くか.trueは右
+        if(rect_y - characterTmp.getPosition().y < 0) {//カーソルの位置と現在のキャラの位置を比較して方向を決める
+            upOrDown = false;
         }
-        if(rect_x - characterTmp.getPosition().x < 0) {
-            leftOrright = false;
+        if(rect_x - characterTmp.getPosition().x < 0) {//カーソルの位置と現在のキャラの位置を比較して方向を決める
+            leftOrRight = false;
         }
-        if(upOrdown == true && step == 1) {
-            characterTmp.setDirection(0);
-            characterTmp.move(characterTmp.getPosition().x, characterTmp.getPosition().y+4);
-        } else if(upOrdown == false && step == 1) {
-            characterTmp.setDirection(3);
-            characterTmp.move(characterTmp.getPosition().x, characterTmp.getPosition().y-4);
-        } else if(leftOrright == true && step == 2){
-            characterTmp.move(characterTmp.getPosition().x+4, characterTmp.getPosition().y);
-        } else if(leftOrright == false && step == 2) {
+        if(upOrDown == true && step == 1) {//下に行くとき
+            characterTmp.setDirection(0);//方向転換
+            characterTmp.move(characterTmp.getPosition().x, characterTmp.getPosition().y+4);//移動
+        } else if(upOrDown == false && step == 1) {//上に行くとき
+            characterTmp.setDirection(3);//方向転換
+            characterTmp.move(characterTmp.getPosition().x, characterTmp.getPosition().y-4);//移動
+        } else if(leftOrRight == true && step == 2){//右に行くとき.方向転換はべつのとこで行う
+            characterTmp.move(characterTmp.getPosition().x+4, characterTmp.getPosition().y);//移動
+        } else if(leftOrRight == false && step == 2) {//左に行くとき
             characterTmp.move(characterTmp.getPosition().x-4, characterTmp.getPosition().y);
         }
-        if(characterTmp.getPosition().y == rect_y) {
-            if(rect_x != characterTmp.getPosition().x) {
-                if(leftOrright == true) {
-                    characterTmp.setDirection(2);
+        if(characterTmp.getPosition().y == rect_y) {//上下に移動し終わった後方向転換をする
+            if(rect_x != characterTmp.getPosition().x) {//左右に移動する必要があるとき。つまり上下に行ったあと左右に移動するとき
+                if(leftOrRight == true) {//右
+                    characterTmp.setDirection(2);//右に方向転換
                 } else {
-                    characterTmp.setDirection(1);
+                    characterTmp.setDirection(1);//左に方向転換
                 }
             }
-            step = 2;
+            step = 2;//移動ステップを2にする
         }
-        if(characterTmp.getPosition().x == rect_x && characterTmp.getPosition().y == rect_y) {
+        if(characterTmp.getPosition().x == rect_x && characterTmp.getPosition().y == rect_y) {//目的地に行ったらアニメーション終了
             step = 1;
-            state.setMakeGraphic(true);
-            characterTmp.move(rect_x, rect_y);
-            timer.stop();
+            state.setMakeGraphic(true);//範囲を描画するようにする.
+            characterTmp.move(rect_x, rect_y);//上手く移動できてない場合があるのでもう一度目的地に合わせる
+            timer.stop();//アニメーション終了
         }
         repaint();
     }
     public void mouseClicked(MouseEvent e) {
-        int btn = e.getButton();
-        Point point = e.getPoint();
-        if (btn == MouseEvent.BUTTON1){
-            rect_x = point.x - (point.x%TileSize);
-            rect_y = point.y- (point.y%TileSize);
-            int array_x = rect_x/32;
-            int array_y = rect_y/32;
-            if(array_x < 0 || map.getHorizontalLength() < array_x || array_y < 0 || map.getVerticalLength() < array_y) {
+        int btn = e.getButton();//クリックがどのボタンか取得
+        Point point = e.getPoint();//クリックされた地点を取得
+        if (btn == MouseEvent.BUTTON1){//左クリックだったとき
+            rect_x = point.x - (point.x%TileSize);//カーソルのいちを補正
+            rect_y = point.y- (point.y%TileSize);//カーソルの位置を補正
+            int array_x = rect_x/32;//配列に入れるときには配列のサイズに合わせるarray_は配列の添え字になるときの変数
+            int array_y = rect_y/32;//
+            if(array_x < 0 || map.getHorizontalLength() < array_x || array_y < 0 || map.getVerticalLength() < array_y) {//配列の領域外は弾く
                 return;
             }
-            map.charaPositionInit();
-            if(state.getMoveFlag() == true && state.getBattleFlag() == false && state.getSummonFlag() == false) {//移動
-                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getMoveSelected() == false && state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer()) {
-                    tmp_x = rect_x; tmp_y = rect_y;
-                    map.paintMoveRange(array_x, array_y, map.getCharaPosition(array_x, array_y).getSpeed());
-                }else if(map.getHaniMapCode(array_x, array_y) == '1') {
-                    characterTmp = map.getCharaPosition(tmp_x/32, tmp_y/32);
-                    state.setMakeGraphic(false);
-                    timer = new Timer(10, this);
-                    timer.start();
-                    map.haniMapInit();
-                    characterTmp.setMoveSelected(true);
-                    modelTextLog.changeText("<html>player<body>"+characterTmp.getPlayer()+"<br/>の"+characterTmp.getName()+"<br/>が移動");
+            map.charaPositionInit();//一度ここでキャラの位置情報を更新
+            if(state.getMoveFlag() == true && state.getBattleFlag() == false && state.getSummonFlag() == false) {//移動コマンドの時
+                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getMoveSelected() == false && 
+                state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer() && 
+                !(map.getCharaPosition(array_x, array_y).getClassType() == 'D' || map.getCharaPosition(array_x, array_y).getClassType() == 'E')) {//ここの条件長いけど
+                    //キャラがいないマス、既に移動したキャラ、操作プレイヤーのものではないキャラを弾いてる,拠点も弾いてたわ
+                    tmp_x = rect_x; tmp_y = rect_y;//移動前のクリックした段階での座標を持つ
+                    map.paintMoveRange(array_x, array_y, map.getCharaPosition(array_x, array_y).getSpeed());//移動範囲にキャラの座標と移動できる範囲を入れて描画.
+                } else if(map.getHaniMapCode(array_x, array_y) == '1') {//移動できるマスの時
+                    characterTmp = map.getCharaPosition(tmp_x/32, tmp_y/32);//一時変数に元の位置のキャラを保存する
+                    state.setMakeGraphic(false);//範囲は処理の軽減のため新たに画像を生成しなくする
+                    timer = new Timer(10, this);//アニメーション
+                    timer.start();//開始
+                    map.haniMapInit();//範囲を適切に設定しなおし後で描画
+                    characterTmp.setMoveSelected(true);//移動し終わったという設定をキャラにつける
+                    modelTextLog.changeText("<html>player<body>"+characterTmp.getPlayer()+"<br/>の"+characterTmp.getName()+"<br/>が移動");//テキストログの設定
                 }
-            } else if(state.getMoveFlag() == false && state.getBattleFlag() == false && state.getSummonFlag() == true && map.getHaniMapCode(array_x, array_y) == '1') {
-                if(state.getNowSummon() == null) {
+            } else if(state.getMoveFlag() == false && state.getBattleFlag() == false && state.getSummonFlag() == true && map.getHaniMapCode(array_x, array_y) == '1') {//召喚ボタンが押されて召喚できるマスだったとき
+                if(state.getNowSummon() == null) {//今召喚するものが選択されてないときは弾く
                     return;
                 }
-                BaseCharacter c =  state.getNowSummon();//召喚
+                BaseCharacter c =  state.getNowSummon();//召喚するものを取得
                 if(state.getNowPlayer() == 1) {
-                    if(state.getPlayer1Mana() - c.getCost() >= 0 && c != null) {
-                        state.setPlayer1Mana(c.getCost());
-                        c.move(rect_x, rect_y);
-                        map.addCharacter(c, c.getPlayer());
+                    if(state.getPlayer1Mana() - c.getCost() >= 0 && c != null) {//プレイヤー1の時のマナが足りてるか判定
+                        state.setPlayer1Mana(c.getCost());//マナを消費し
+                        c.move(rect_x, rect_y);//目的の位置に移動
+                        map.addCharacter(c, c.getPlayer());//リストに追加
                     }
                 } else {
-                    if(state.getPlayer2Mana() - c.getCost() >= 0 && c != null) {
+                    if(state.getPlayer2Mana() - c.getCost() >= 0 && c != null) {//プレイヤー2も同様
                         state.setPlayer2Mana(c.getCost());
                         c.move(rect_x, rect_y);
                         map.addCharacter(c, c.getPlayer());
                     }
                 }
-                state.setNowSummon(null);
-                modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+"<br/>が"+c.getName()+"<br/>を召喚");
-            } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){
-                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && ButtleSelectflag == false) {
-                    tmpl = map.getCharaPosition(array_x, array_y);
-                    if(tmpl.getPlayer() != state.getNowPlayer()) {
-                        return;
-                    }
-                    map.paintButtleRange(array_x, array_y);
-                    ButtleSelectflag = true;
-                } else if(ButtleSelectflag == true && map.getHaniMapCode(array_x, array_y) == '1' && map.getCharaPosition(array_x, array_y) != null) {
-                    BaseCharacter chara = map.getCharaPosition(array_x, array_y);
-                    if(chara.getClassType() != 'E' || chara.getClassType() != 'D') {
-                        chara.giveDamage(tmpl.getAttackPoint());
+                state.setNowSummon(null);//またボタンを押して召喚するものを選んだほうが安全
+                modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+"<br/>が"+c.getName()+"<br/>を召喚");//テキストログ
+            } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){//戦闘コマンド
+               
+                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && 
+                    battleSelectflag == false && battleCharacter.getPlayer() != state.getNowPlayer()) {
+                    //長いけどキャラ選択した時点でそこがキャラがいないマスじゃなくて、選択したキャラが戦闘済みじゃなくて、
+                    //攻撃させるキャラを選択する前で、選択したキャラが自分のキャラクターかを判定する
+                    battleCharacter = map.getCharaPosition(array_x, array_y);//戦闘する自分のキャラは一時変数に保存
+                    map.paintbattleRange(array_x, array_y);//戦闘範囲を描画
+                    battleSelectflag = true;//次は誰に攻撃するかを選ぶ
+                } else if(battleSelectflag == true && map.getHaniMapCode(array_x, array_y) == '1' && map.getCharaPosition(array_x, array_y) != null) {
+                    //誰に攻撃するか選ぶ前で攻撃できるはんいに入っててそこにキャラがいるとき
+                    BaseCharacter battledCharacter = map.getCharaPosition(array_x, array_y);//攻撃「される」キャラを保存.
+                    if(battledCharacter.getClassType() != 'E' || battledCharacter.getClassType() != 'D') {//拠点以外のとき
+                        battledCharacter.giveDamage(battleCharacter.getAttackPoint());//人間に対する攻撃力でダメージ演算
                     } else {
-                        chara.giveDamage(tmpl.getAttackToBuilding());
+                        battledCharacter.giveDamage(battleCharacter.getAttackToBuilding());//拠点のときは拠点に対する攻撃力で計算
                     }
-                    modelTextLog.changeText("<html>player<body>"+tmpl.getPlayer()+"<br/>の"+tmpl.getName()+"が<br/>攻撃</html>");
-                    if(chara.isDead() == true) {
-                        map.deleteCharacter(chara, chara.getPlayer());
-                        if(chara.getClassType() == 'E' || chara.getClassType() == 'D'){
-                        System.exit(0);
+                    modelTextLog.changeText("<html>player<body>"+battleCharacter.getPlayer()+"<br/>の"+battleCharacter.getName()+"が<br/>攻撃</html>");//テキストログ
+                    if(battledCharacter.isDead() == true) {//戦闘でHPが0になったとき
+                        map.deleteCharacter(battledCharacter, battledCharacter.getPlayer());//マップからキャラを削除する
+                        if(battledCharacter.getClassType() == 'E' || battledCharacter.getClassType() == 'D'){//拠点だったらゲーム終了
+                        System.exit(0);//ひとまずは強制終了にしてる。ここからリザルト画面にうつるのかな
                         }
                     }
-                    ButtleSelectflag = false;
-                    tmpl.setBattleSelected(true);
-                    map.haniMapInit();
+                    battleSelectflag = false;//攻撃をする自キャラを再度選択できるようにする
+                    battleCharacter.setBattleSelected(true);//戦闘済みの状態にする
+                    map.haniMapInit();//範囲を書き直す
                 }
             }
-            if(map.getCharaPosition(array_x, array_y) == null) {
-                modelMapInfo.changeText("<html>地面<body><br />何もない</body></html>");
-            } else {
+            if(map.getCharaPosition(array_x, array_y) == null) {//マップ情報のやつ
+                modelMapInfo.changeText("<html>地面<body><br />何もない</body></html>");//マップのカーソルがキャラクター以外にある時
+            } else {//キャラクターの情報を出力
                 String move;
                 String attack;
-                if(map.getCharaPosition(array_x, array_y).getMoveSelected() == false) {
+                if(map.getCharaPosition(array_x, array_y).getMoveSelected() == false) {//移動済みかどうか
                     move = "できる";
                 } else {
                     move = "できない";
                 }
-                if(map.getCharaPosition(array_x, array_y).getBattleSelected() == false) {
+                if(map.getCharaPosition(array_x, array_y).getBattleSelected() == false) {//戦闘済みがどうか
                     attack = "できる";
                 } else {
                     attack = "できない";
@@ -332,10 +332,8 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                 move + "<br />攻撃:" + attack + "</html>");
             }
         }else if (btn == MouseEvent.BUTTON3){
-            rect_flag = false;
         }else if (btn == MouseEvent.BUTTON2){
         }
-        
         map.charaPositionInit();
         repaint();
     }
@@ -377,7 +375,7 @@ class BaseCharacter {
         this.cost = cost;
 
         try {
-            setGraphic(classType); 
+            setGraphic(classType); //画像をここでセット
         } catch (Exception e) {
             //TODO: handle exception
         }
@@ -390,10 +388,10 @@ class BaseCharacter {
     public void setImagePath(String pathString) {//セッター
         imagePath = pathString;
     }
-    public String getName() {
+    public String getName() {//キャラ名を取得
         return name;
     }
-    public int getPlayer() {
+    public int getPlayer() {//キャラがどのプレイヤーのものか取得
         return player;
     }
     public void move(int x, int y) {//移動処理
@@ -447,10 +445,10 @@ class BaseCharacter {
     public void setMoveSelected(boolean flag) {//ターンの初めに移動しなおせるようにする
         moveSelected = flag;
     }
-    public void setBattleSelected(boolean flag) {
+    public void setBattleSelected(boolean flag) {//ターンの初めに攻撃しなおせるようにする
         battleSelected = flag;
     }
-    public void setGraphic(char character) throws IOException{//
+    public void setGraphic(char character) throws IOException{//グラフィックをセットする
         ImportTile tile = null;
         if(character == '0') {
             if(player == 1) {
@@ -482,19 +480,18 @@ class BaseCharacter {
             } else {
                 tile = new ImportTile("キャラ5B.png");
             }
-        }
-        else if(character == 'E') {
+        } else if(character == 'E') {
             tile = new ImportTile("キャラクター.png");
             if(player == 1) {
+                icon[1] = tile.getTile('E'); 
+                icon[2] = tile.getTile('E');
+                icon[3] = tile.getTile('E'); 
+                icon[0] = tile.getTile('E'); 
+            } else {
                 icon[0] = tile.getTile('D'); 
                 icon[1] = tile.getTile('D'); 
                 icon[2] = tile.getTile('D');
                 icon[3] = tile.getTile('D'); 
-            } else {
-                icon[0] = tile.getTile('E'); 
-                icon[1] = tile.getTile('E'); 
-                icon[2] = tile.getTile('E');
-                icon[3] = tile.getTile('E'); 
             }
             graphic = icon[0];
             return;
@@ -505,10 +502,10 @@ class BaseCharacter {
         icon[3] = tile.getTile('C'); 
         graphic = icon[0];
     }
-    public BufferedImage getGraphic() throws IOException{
+    public BufferedImage getGraphic() throws IOException{//グラフィックのゲッター
         return graphic;
     }
-    public void setDirection(int n) {
+    public void setDirection(int n) {//方向転換
         graphic = icon[n];
     }
 }
@@ -581,8 +578,7 @@ class Map {//マップを生成するクラス
         verticalLength = stageMapData.length;//縦横の長さを取得
         haniMapData = new char [verticalLength][horizontalLength];//範囲を表す配列を初期化
         charaPosition = new BaseCharacter [verticalLength][horizontalLength];
-        character1.add(new Kyoten(480, 32, 1));//拠点の初期化なのでマップによって修正
-        character2.add(new Kyoten(480, 704, 2));
+        setBuilding();
         haniMapInit();
         charaPositionInit();
     }
@@ -602,19 +598,19 @@ class Map {//マップを生成するクラス
         return stageMapArray;//配列として返す
     }
     /////////////////////////////////////////////////////////
-    public void setBuilding() {
+    public void setBuilding() {//マップの拠点のタイルから拠点のキャラクターを生成する
         for(int i = 0; i < verticalLength; i++) {
             for(int j = 0; j < horizontalLength; j++) {
-                if(stageMapData[j][i] == 'D') {
-                    addCharacter(new Kyoten(32*i, 32*j, 1), 1);
+                if(stageMapData[i][j] == 'E') {
+                    addCharacter(new Kyoten(32*j, 32*i, 1), 1);
                 }
-                if(stageMapData[j][i] == 'E') {
-                    addCharacter(new Kyoten(32*i, 32*j, 1), 2);
+                if(stageMapData[i][j] == 'D') {
+                    addCharacter(new Kyoten(32*j, 32*i, 2), 2);
                 }
             }
         }
     }
-    public void charaPositionInit() {
+    public void charaPositionInit() {//キャラの位置関係をリセットする。
         for(int i = 0; i < verticalLength; i++) {
             for(int j = 0; j < horizontalLength; j++) {
                 charaPosition[i][j] = null;
@@ -644,21 +640,21 @@ class Map {//マップを生成するクラス
             character2.remove(chara);
         }
     }
-    public int getListSize(int player) {
+    public int getListSize(int player) {//リストの大きさを取得
         if(player == 1) {
             return character1.size();
         } else {
             return character2.size();
         }
     }
-    public ArrayList<BaseCharacter> getList(int player) {
+    public ArrayList<BaseCharacter> getList(int player) {//キャラクターが入ってるリストを取得
         if(player == 1) {
             return character1;
         } else {
             return character2;
         }
     }
-    public void reChracterMoveandBattle(int player) {
+    public void reChracterMoveandBattle(int player) {//ターンの終了時に移動と攻撃を再びできるようにする
         if(player == 1) {
             for(int i = 0; i < character1.size(); i++) {
                 character1.get(i).setBattleSelected(false);
@@ -701,9 +697,9 @@ class Map {//マップを生成するクラス
     public BaseCharacter getCharaPosition(int x, int y) {//キャラそのものが入ってる配列を返す
         return charaPosition[y][x];
     }
-    public void paintSummonRange(int x, int y, int speed) {
+    public void paintSummonRange(int x, int y, int speed) {//召喚判定
         for(int i = 0; i <= speed; i++) {
-            for(int j = 0; j <= speed; j++) {
+            for(int j = 0; j <= speed; j++) {//移動不能マスを染めないだけ。移動の判定とは少しアルゴリズムが違う
                 if(0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength) {
                     if((stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') && charaPosition[y+i][x+j] == null) {
                         haniMapData[y+i][x+j] = '1';
@@ -727,37 +723,37 @@ class Map {//マップを生成するクラス
             }
         }
     }
-    public void paintMoveRange(int x, int y, int speed) {//移動範囲を塗りつぶす。修正必須
-        boolean stopFlag = false;//
+    public void paintMoveRange(int x, int y, int speed) {//移動範囲を塗りつぶす
+        boolean stopFlag = false;//j = 0, i != 0のときに移動不可マスにぶつかったかどうかを記録する
         for(int i = 0; i <= speed; i++) {
-            for(int j = 0; j <= speed; j++) {
+            for(int j = 0; j <= speed; j++) {//まず横のマスを見ていき移動不能マスや人にぶつかったらそれ以上塗りつぶすのをやめて縦に1マス進める。また横に見てくのを繰り返し。縦に一マス進めたときにぶつかったら塗りつぶすのをやめる.
                 if((i == 0 && j == 0) || !(0 <= x+j && x+j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
-                    continue;
+                    continue;//本人のいるとことかは飛ばす
                 }
-                boolean banTile = ((stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') && charaPosition[y+i][x+j] == null);
-                if(banTile == true){
-                    haniMapData[y+i][x+j] = '1';
-                } else if(banTile == false && j == 0){
-                    stopFlag = true;
+                boolean canMoveTile = ((stageMapData[y+i][x+j] == '.' || stageMapData[y+i][x+j] == '5' || stageMapData[y+i][x+j] == '6' || stageMapData[y+i][x+j] == '7') && charaPosition[y+i][x+j] == null);//移動できるマス
+                if(canMoveTile == true){//移動できるマスなら
+                    haniMapData[y+i][x+j] = '1';//染める
+                } else if(canMoveTile == false && j == 0){//移動出来ない且つ縦に1マス進めたときなら
+                    stopFlag = true;//塗りつぶすのをやめる
                     break;
-                } else {
-                    break;
+                } else {//移動できないだけならば
+                    break;//iを1つ進める
                 }
             }
-            if(stopFlag == true) {
+            if(stopFlag == true) {//ループを抜ける
                 stopFlag = false;
                 break;
             }
-        }
+        }//以下も同様
         for(int i = 0; i <= speed; i++) {
             for(int j = 0; j <= speed; j++) {
                 if((i == 0 && j == 0) || !(0 <= x-j && x-j < horizontalLength && 0 <= y+i && y+i < verticalLength)) {
                     continue;
                 }
-                boolean banTile = ((stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7') && charaPosition[y+i][x-j] == null);
-                if(banTile == true){
+                boolean canMoveTile = ((stageMapData[y+i][x-j] == '.' || stageMapData[y+i][x-j] == '5' || stageMapData[y+i][x-j] == '6' || stageMapData[y+i][x-j] == '7') && charaPosition[y+i][x-j] == null);
+                if(canMoveTile == true){
                     haniMapData[y+i][x-j] = '1';
-                } else if(banTile == false && j == 0){
+                } else if(canMoveTile == false && j == 0){
                     stopFlag = true;
                     break;
                 } else {
@@ -774,10 +770,10 @@ class Map {//マップを生成するクラス
                 if(!(0 <= x-j && x-j < horizontalLength && 0 <= y-i && y-i < verticalLength)) {
                     continue;
                 }
-                boolean banTile = ((stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7') && charaPosition[y-i][x-j] == null);
-                if(banTile == true){
+                boolean canMoveTile = ((stageMapData[y-i][x-j] == '.' || stageMapData[y-i][x-j] == '5' || stageMapData[y-i][x-j] == '6' || stageMapData[y-i][x-j] == '7') && charaPosition[y-i][x-j] == null);
+                if(canMoveTile == true){
                     haniMapData[y-i][x-j] = '1';
-                } else if(banTile == false && j == 0){
+                } else if(canMoveTile == false && j == 0){
                     stopFlag = true;
                     break;
                 } else {
@@ -794,10 +790,10 @@ class Map {//マップを生成するクラス
                 if(!(0 <= x+j && x+j < horizontalLength && 0 <= y-i && y-i < verticalLength)) {
                     continue;
                 }
-                boolean banTile = ((stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][x+j] == '7') && charaPosition[y-i][x+j] == null);
-                if(banTile == true){
+                boolean canMoveTile = ((stageMapData[y-i][x+j] == '.' || stageMapData[y-i][x+j] == '5' || stageMapData[y-i][x+j] == '6' || stageMapData[y-i][x+j] == '7') && charaPosition[y-i][x+j] == null);
+                if(canMoveTile == true){
                     haniMapData[y-i][x+j] = '1';
-                } else if(banTile == false && j == 0){
+                } else if(canMoveTile == false && j == 0){
                     stopFlag = true;
                     break;
                 } else {
@@ -811,9 +807,9 @@ class Map {//マップを生成するクラス
         }
         
     }
-    public void paintButtleRange(int x, int y) {
+    public void paintbattleRange(int x, int y) {//攻撃できる範囲を塗りつぶす
         for(int i = 0; i <= 1; i++) {
-            for(int j = 0; j <= 1; j++) {
+            for(int j = 0; j <= 1; j++) {//八方位の8マスを染める
                 if(i == 0 && j == 0) {
                     continue;
                 }
@@ -832,17 +828,17 @@ class Map {//マップを生成するクラス
             }
         }
     }
-    public void saveMap() throws IOException{
-        File file = new File("map6.txt");
-        FileWriter filewriter = new FileWriter(file);
-        for(int i = 0; i < verticalLength; ++i) {
+    public void saveMap() throws IOException{//マップエディタ用。マップをテキストファイルに保存する
+        File file = new File("map6.txt");//保存するファイル
+        FileWriter filewriter = new FileWriter(file);//ファイルに書き込む物
+        for(int i = 0; i < verticalLength; ++i) {//横一行ずつ保存していく
             String s = new String(stageMapData[i]);
                 filewriter.write(s);
                 filewriter.write("\n");
         }
         filewriter.close();
     }
-    public BaseCharacter getKyoten(int player) {
+    public BaseCharacter getKyoten(int player) {//拠点を返す
         BaseCharacter c;
         if(player == 1) {
             c = character1.get(0);
@@ -851,7 +847,7 @@ class Map {//マップを生成するクラス
         }
         return c;
     }
-    public void autoCreateMap() {
+    public void autoCreateMap() {//自動生成
         for(int i = 0; i < horizontalLength; i++) {
             for(int j = 0; j < verticalLength; j++) {
                 stageMapData[j][i] = '.';
@@ -899,7 +895,7 @@ class StageEditScreen extends GameScreen implements MouseListener{//エディタ
     @Override
     public void paintComponent(Graphics g){
         try {
-            mapImage = createImage("MapTile.png", 1);
+            mapImage = createImage("MapTile.png", 1);//ステージのマップだけ表示する.範囲とかは生成しないで良い
         } catch (Exception e) {
             //TODO: handle exception
         }
@@ -908,16 +904,15 @@ class StageEditScreen extends GameScreen implements MouseListener{//エディタ
         g.drawRect(rect_x, rect_y, TileSize, TileSize);
     }
     public void mouseClicked(MouseEvent e) {
-        int btn = e.getButton();
-        Point point = e.getPoint();
+        int btn = e.getButton();//どのボタンかを取得
+        Point point = e.getPoint();//クリックされた座標を取得
         if (btn == MouseEvent.BUTTON1){
-            rect_x = point.x - (point.x%TileSize);
+            rect_x = point.x - (point.x%TileSize);//カーソルの座標
             rect_y = point.y- (point.y%TileSize);
-            int array_x = rect_x/32;
+            int array_x = rect_x/32;//配列に入れる座標
             int array_y = rect_y/32;
-            this.map.setStageMapCode(array_x, array_y, state.getNowTile());
+            this.map.setStageMapCode(array_x, array_y, state.getNowTile());//ここで配列を書き換えて見た目を変えている
         }else if (btn == MouseEvent.BUTTON3){
-            rect_flag = false;
         }else if (btn == MouseEvent.BUTTON2){
         }
         repaint();
@@ -933,19 +928,18 @@ class StageEdit extends Map{//エディタのMにあたる部分
     }
 }
 class StageEditFrame extends JFrame implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditFrame()をどっかでやればいいはず.
-    StageEditScreen screen;
-    JButton save = new JButton("save");
-    JButton b [] = new JButton[16];
+    StageEditScreen screen;//ゲーム画面用の変数
+    JButton save = new JButton("save");//押すと現在のエディタのマップがテキストファイルに保存される
+    JButton b [] = new JButton[16];//タイル
+    JPanel p1;
+    JPanel p2;
     JPanel p3;
-    JPanel p4;
     JButton autoMapCreate;
     ImportTile tile = new ImportTile("MapTile.png");
     public StageEditFrame() throws IOException {
         JPanel panel = new JPanel();
         screen = new StageEditScreen("map6.txt");
-        panel.setLayout(new GridLayout(1, 1));
-        panel.add(screen);
-        JPanel  p1=new JPanel(),p2=new JPanel(), p3 = new JPanel();
+        p1=new JPanel();p2=new JPanel(); p3 = new JPanel();
         b[0] = new JButton(new ImageIcon(tile.getTile('.')));
         b[1] = new JButton(new ImageIcon(tile.getTile('0')));
         b[2] = new JButton(new ImageIcon(tile.getTile('1')));
@@ -963,27 +957,28 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
         b[14] = new JButton(new ImageIcon(tile.getTile('D')));
         b[15] = new JButton(new ImageIcon(tile.getTile('E')));
         autoMapCreate = new JButton("自動生成");
-        p1.setLayout(new GridLayout(4,1));
+        panel.setLayout(new GridLayout(1,1));
+        panel.add(screen);
         p2.setLayout(new GridLayout(4,4));
-        p3.setLayout(new GridLayout(1, 1));
-        p3.add(autoMapCreate);
+        p1.setLayout(new GridLayout(1,2));
+        p1.add(autoMapCreate);
         autoMapCreate.addActionListener(this);
-        p3.add(save);
-        for(int i = 0; i < 16; i++) {
+        p1.add(save);
+        for(int i = 0; i < 16; i++) {//actionListernerいれる奴
             b[i].addActionListener(this);;
         }
-        for(int i = 0; i < 16; i++) {
+        for(int i = 0; i < 16; i++) {//パネルにはっつける
             p2.add(b[i]);
         }
         save.addActionListener(this);
+        this.add(p1, BorderLayout.SOUTH);
         this.add(p2,BorderLayout.EAST);
         this.add(panel, BorderLayout.CENTER);
-        this.add(p3, BorderLayout.SOUTH);
         this.pack(); 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
-    public void actionPerformed(ActionEvent e){
+    public void actionPerformed(ActionEvent e){//押すボタンによってセットするタイルを変えてる
         if(e.getSource() == b[0]) {
             screen.state.setNowTile('.');
         } else if(e.getSource() == b[1]) {
@@ -1018,7 +1013,7 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
             screen.state.setNowTile('E');
         } else if(e.getSource() == save) {
             try {
-                screen.map.saveMap();
+                screen.map.saveMap();//セーブ
             } catch (Exception IE) {
                 //TODO: handle exception
             }
@@ -1180,41 +1175,38 @@ class GameFrame extends JFrame implements ActionListener{
         this.add(p2, BorderLayout.EAST);
         this.add(p4, BorderLayout.SOUTH);
         this.add(panel, BorderLayout.CENTER);
+        this.pack();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {//ボタン押されたとき
         screen.map.charaPositionInit();
-        if (e.getSource()==b1) {
-            screen.map.haniMapInit();
-            screen.rectColor = Color.blue;
-            screen.state.setSummon();
-            BaseCharacter c = screen.map.getKyoten(screen.state.getNowPlayer());
-            screen.map.paintSummonRange(c.getPosition().x/32, c.getPosition().y/32, c.getSpeed());
-            p3.setVisible(true);
-        } else if(e.getSource()==b2) {
-            screen.map.haniMapInit();
-            screen.rectColor = Color.red;
-            screen.state.setMove();
-            p3.setVisible(false);
-        } else if(e.getSource() == b3) {
-            screen.map.haniMapInit();
-            screen.rectColor = Color.yellow;
-            screen.state.setBattle();
-            p3.setVisible(false);
-        } else if(e.getSource() == b4) {
-            screen.map.haniMapInit();
-            if(screen.state.getNowPlayer() == 1) {
-                screen.state.setNowPlayer(2);
-                screen.state.setPlayer1Mana(-10);
-                screen.map.reChracterMoveandBattle(1);
+        if (e.getSource()==b1) {//召喚が押されたとき
+            screen.map.haniMapInit();//初期化しないと必要な分以外も染める
+            screen.rectColor = Color.blue;//カーソルの色を帰る
+            screen.state.setSummon();//召喚コマンド受付状態にする
+            BaseCharacter c = screen.map.getKyoten(screen.state.getNowPlayer());//拠点を取得
+            screen.map.paintSummonRange(c.getPosition().x/32, c.getPosition().y/32, c.getSpeed());//染める
+        } else if(e.getSource()==b2) {//移動が押されたとき
+            screen.map.haniMapInit();//初期化
+            screen.rectColor = Color.red;//カーソルの色変更
+            screen.state.setMove(); //移動コマンドを受け付ける
+        } else if(e.getSource() == b3) {//攻撃が押された
+            screen.map.haniMapInit();//初期化
+            screen.rectColor = Color.yellow;//色変更
+            screen.state.setBattle();//攻撃コマンドを受け付ける
+        } else if(e.getSource() == b4) {//ターンエンドを押したとき
+            screen.map.haniMapInit();//染めているとこを消す
+            if(screen.state.getNowPlayer() == 1) {//プレイヤー1だったと木
+                screen.state.setNowPlayer(2);//プレイヤー2の操作に写って
+                screen.state.setPlayer1Mana(-10);//マナ回復
+                screen.map.reChracterMoveandBattle(1);//プレイヤー1のキャラクターの移動・攻撃を再度できるようにする
             } else {
                 screen.state.setNowPlayer(1);
                 screen.state.setPlayer2Mana(-10);
                 screen.map.reChracterMoveandBattle(2);
             }
-            p3.setVisible(false);
-        } else if(e.getSource() == b5) {
+        } else if(e.getSource() == b5) {//召喚するものをセットする
             screen.state.setNowSummon(new Ippan(0, 0, screen.state.getNowPlayer()));
         } else if(e.getSource() == b6) {
             screen.state.setNowSummon(new Otaku(0, 0, screen.state.getNowPlayer()));
