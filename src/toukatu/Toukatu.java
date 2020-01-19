@@ -21,7 +21,7 @@ import static start.StartManager.START_UPDATE;
 /////////////////////////////////////////////////////////
 public class Toukatu extends JFrame implements Observer{
     StartManager start;
-    MapPanel mp;
+    GamePanel gp;
     // ResultManager result;
 
     private int toukatuState;
@@ -56,11 +56,11 @@ public class Toukatu extends JFrame implements Observer{
                         this.getContentPane().removeAll();
                         toukatuState = GAME;
                         try {
-                            mp = new MapPanel();
+                            gp = new GamePanel("map5.txt");
                         } catch(IOException e){
                             System.out.println("ゲーム部分に関するエラー");
                         }
-                        this.add(mp, BorderLayout.CENTER);
+                        this.add(gp, BorderLayout.CENTER);
                         this.revalidate();
                         this.repaint();
                         break;
