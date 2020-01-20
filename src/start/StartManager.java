@@ -35,7 +35,7 @@ public class StartManager extends JPanel {
 
 
         //画面のタイトル（title）と操作説明部分（notice）
-        JLabel title = new JLabel("†uec bouei†");
+        JLabel title = new JLabel("Submission Impossible");
         title.setHorizontalAlignment(JLabel.CENTER);
         title.setFont(new Font("Impact", Font.PLAIN, 30));
         JLabel notice = new JLabel("select : ↑↓　, press Enter");
