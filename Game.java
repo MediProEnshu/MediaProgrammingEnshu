@@ -13,6 +13,7 @@ import java.util.Random;
 import java.io.FileWriter;
 import java.util.Observable;
 import java.util.Observer;
+
 class GameState {//ゲームの全体の状態を統括。大体目に見えない部分を処理
     private boolean moveFlag;//カーソルの判定が移動になってるか
     private boolean summonFlag;//カーソルの判定が召喚になってるか
@@ -136,6 +137,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     DynamicTextModel modelTextLog = new DynamicTextModel("テキストログ");//テキストログのモデル
     DynamicTextModel modelMapInfo = new DynamicTextModel(" ");//マップ情報を出すラベルのモデル
     int step = 1;//移動の時に使う。ステップ一が縦移動でステップ2が横移動
+    SoundPlayer sp;
     public GameScreen(String file) throws IOException {
         map = new Map(file);
         mapImage = createImage("MapTile.png", 1);
@@ -278,12 +280,13 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                         map.addCharacter(c, c.getPlayer());
                     }
                 }
+                map.setHaniMapCode(array_x, array_y, '.');
                 state.setNowSummon(null);//またボタンを押して召喚するものを選んだほうが安全
-                modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+"<br/>が"+c.getName()+"<br/>を召喚");//テキストログ
+                modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+" が<br/>"+c.getName()+"を召喚");//テキストログ
             } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){//戦闘コマンド
                
                 if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && 
-                    battleSelectflag == false && battleCharacter.getPlayer() != state.getNowPlayer()) {
+                    battleSelectflag == false && map.getCharaPosition(array_x, array_y).getPlayer() == state.getNowPlayer()) {
                     //長いけどキャラ選択した時点でそこがキャラがいないマスじゃなくて、選択したキャラが戦闘済みじゃなくて、
                     //攻撃させるキャラを選択する前で、選択したキャラが自分のキャラクターかを判定する
                     battleCharacter = map.getCharaPosition(array_x, array_y);//戦闘する自分のキャラは一時変数に保存
@@ -291,13 +294,18 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     battleSelectflag = true;//次は誰に攻撃するかを選ぶ
                 } else if(battleSelectflag == true && map.getHaniMapCode(array_x, array_y) == '1' && map.getCharaPosition(array_x, array_y) != null) {
                     //誰に攻撃するか選ぶ前で攻撃できるはんいに入っててそこにキャラがいるとき
+                    int damage = 0;
                     BaseCharacter battledCharacter = map.getCharaPosition(array_x, array_y);//攻撃「される」キャラを保存.
                     if(battledCharacter.getClassType() != 'E' || battledCharacter.getClassType() != 'D') {//拠点以外のとき
                         battledCharacter.giveDamage(battleCharacter.getAttackPoint());//人間に対する攻撃力でダメージ演算
+                        damage = battleCharacter.getAttackPoint();
                     } else {
                         battledCharacter.giveDamage(battleCharacter.getAttackToBuilding());//拠点のときは拠点に対する攻撃力で計算
+                        damage = battleCharacter.getAttackToBuilding();
                     }
-                    modelTextLog.changeText("<html>player<body>"+battleCharacter.getPlayer()+"<br/>の"+battleCharacter.getName()+"が<br/>攻撃</html>");//テキストログ
+                    
+                    modelTextLog.changeText("<html>player<body>"+battleCharacter.getPlayer()+"<br/>の"+battleCharacter.getName()+"<br/>が"
+                    + battledCharacter.getPlayer() + "の"+ battledCharacter.getName() +"<br/>に"+ damage + "ダメージを与えた</html>");//テキストログ
                     if(battledCharacter.isDead() == true) {//戦闘でHPが0になったとき
                         map.deleteCharacter(battledCharacter, battledCharacter.getPlayer());//マップからキャラを削除する
                         if(battledCharacter.getClassType() == 'E' || battledCharacter.getClassType() == 'D'){//拠点だったらゲーム終了
