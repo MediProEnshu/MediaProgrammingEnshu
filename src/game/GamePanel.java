@@ -3,6 +3,7 @@ package game;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import base.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -103,6 +104,7 @@ class GameState {//ゲームの全体の状態を統括。大体目に見えな�
 class GameScreen extends JPanel implements MouseListener,ActionListener{
     static final int startX = 0;//画面の位置を調整するもの
     static final int startY = 0;//画面の一を調整するもの
+    SoundPlayer sp;
     int x;
     int y;
     int tmp_x;//移動の際に移動元のマスを記憶するもの
@@ -126,6 +128,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     BaseCharacter characterTmp = new Kyoten(32, 32, 1);
     int step = 1;
     public GameScreen(String file) throws IOException {
+        sp = SoundPlayer.getInstance();
         map = new Map(file);
         mapImage = createImage("game/MapTile.png", 1);
         charaImage = createImage("game/Character.png", 2);
@@ -265,6 +268,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                         c = null;
                     }
                 }
+                sp.playBGM("game/sample.wav");
             } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){
                 if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && ButtleSelectflag == false) {
                     tmpl = map.getCharaPosition(array_x, array_y);
@@ -1060,6 +1064,7 @@ public class GamePanel extends JPanel implements ActionListener{
         p3.setVisible(false);
         cost = new JLabel("残りマナ:Player1"+screen.state.getPlayer1Mana()+"Player2"+screen.state.getPlayer2Mana());
         p4.add(cost);
+        this.setLayout(new BorderLayout());
         this.add(p4, BorderLayout.SOUTH);
         this.add(p1,BorderLayout.WEST);
         this.add(p2,BorderLayout.EAST);
