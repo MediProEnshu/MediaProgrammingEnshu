@@ -35,10 +35,12 @@ public class StartManager extends JPanel {
 
 
         //画面のタイトル（title）と操作説明部分（notice）
-        JLabel title = new JLabel("†陣地防衛ゲーム†");
+        JLabel title = new JLabel("†uec bouei†");
         title.setHorizontalAlignment(JLabel.CENTER);
-        JLabel notice = new JLabel("↑↓キーで選択　Enterキーで決定");
+        title.setFont(new Font("Impact", Font.PLAIN, 30));
+        JLabel notice = new JLabel("select : ↑↓　, press Enter");
         notice.setHorizontalAlignment(JLabel.CENTER);
+        title.setFont(new Font("MS ゴシック", Font.PLAIN, 30));
 
 
         //画面にテキストを表示する
