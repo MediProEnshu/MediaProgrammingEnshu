@@ -19,6 +19,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class SoundPlayer {
     private static Clip clipBGM;
     private static Clip clipSE;
+    private static boolean isPlayingBGM = false;
 
     private static SoundPlayer soundPlayer = new SoundPlayer(); // クラス共通、唯一のインスタンス
 
@@ -29,6 +30,10 @@ public class SoundPlayer {
     }
 
     public void playBGM(String path) {
+        /* 既に鳴っているBGMを消す. */
+        if(this.isPlayingBGM) { this.killBGM(); }
+
+        this.isPlayingBGM = true;
         clipBGM = createClip(new File(path));
         clipBGM.loop(Clip.LOOP_CONTINUOUSLY); // 無限ループ
     }

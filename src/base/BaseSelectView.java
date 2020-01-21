@@ -17,7 +17,7 @@ public class BaseSelectView extends JPanel {
     CursorLabel cursor;
     int cmdSize;
 
-    public BaseSelectView(BaseSelectModel bsm) {
+    public BaseSelectView(BaseSelectModel bsm, String fontName, int fontSize) {
         model = bsm;
         commands = model.getCommands();
         cmdSize = model.getCommandSize();
@@ -29,6 +29,7 @@ public class BaseSelectView extends JPanel {
         cmdsPanel.setLayout(new GridLayout(cmdSize, 1));
         for(BaseCommandModel m : commands) {
             BaseCommandLabel l = new BaseCommandLabel(m);
+            l.changeFont(fontName, fontSize);
             cmdsPanel.add(l);
         }
         cursorPanel.add(cursor);

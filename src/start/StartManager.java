@@ -29,7 +29,8 @@ public class StartManager extends JPanel {
 
         /* BaseSelectのMVCを呼ぶ */
         this.model = new BaseSelectModel(cmds);
-        view = new BaseSelectView(model);
+        view = new BaseSelectView(model, "MS ゴシック", 30
+        );
         controller = new BaseSelectController(model);
         this.addKeyListener(controller); // ここのコンポーネントに対する入力をBaseSelectControllerが受け付けるようにする.
 
