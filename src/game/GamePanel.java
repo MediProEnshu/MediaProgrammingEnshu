@@ -281,19 +281,21 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                         state.setPlayer1Mana(c.getCost());//マナを消費し
                         c.move(rect_x, rect_y);//目的の位置に移動
                         map.addCharacter(c, c.getPlayer());//リストに追加
+                        map.setHaniMapCode(array_x, array_y, '.');
+                        modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+" が<br/>"+c.getName()+"を召喚");//テキストログ
                     }
                 } else {
                     if(state.getPlayer2Mana() - c.getCost() >= 0 && c != null) {//プレイヤー2も同様
                         state.setPlayer2Mana(c.getCost());
                         c.move(rect_x, rect_y);
                         map.addCharacter(c, c.getPlayer());
+                        map.setHaniMapCode(array_x, array_y, '.');
+                        modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+" が<br/>"+c.getName()+"を召喚");//テキストログ
                     }
                 }
                 //TODO:ここにif(陽キャ)sp = play.se("way")をやるelseはなんか別の流す
-                map.setHaniMapCode(array_x, array_y, '.');
-                sp.playBGM("game/sample.wav");
                 state.setNowSummon(null);//またボタンを押して召喚するものを選んだほうが安全
-                modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+" が<br/>"+c.getName()+"を召喚");//テキストログ
+
             } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){//戦闘コマンド
                
                 if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && 
