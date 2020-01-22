@@ -56,7 +56,7 @@ class StageEdit extends Map{//エディタのMにあたる部分
         super(s);
     }
 }
-public class StageEditFrame extends JFrame implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditFrame()をどっかでやればいいはず.
+public class StageEditPanel extends JPanel implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditPanel()をどっかでやればいいはず.
     StageEditScreen screen;//ゲーム画面用の変数
     JButton save = new JButton("save");//押すと現在のエディタのマップがテキストファイルに保存される
     JButton b [] = new JButton[16];//タイル
@@ -65,7 +65,7 @@ public class StageEditFrame extends JFrame implements ActionListener {//いつ�
     JPanel p3;
     JButton autoMapCreate;
     ImportTile tile;
-    public StageEditFrame() throws IOException {
+    public StageEditPanel() throws IOException {
         JPanel panel = new JPanel();
         tile = new ImportTile("game/MapTile.png");
         screen = new StageEditScreen("map6.txt");
@@ -104,8 +104,6 @@ public class StageEditFrame extends JFrame implements ActionListener {//いつ�
         this.add(p1, BorderLayout.SOUTH);
         this.add(p2,BorderLayout.EAST);
         this.add(panel, BorderLayout.CENTER);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
     }
     public void actionPerformed(ActionEvent e){//押すボタンによってセットするタイルを変えてる
         if(e.getSource() == b[0]) {
