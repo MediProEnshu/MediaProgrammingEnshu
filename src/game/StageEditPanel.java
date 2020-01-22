@@ -101,6 +101,7 @@ public class StageEditPanel extends JPanel implements ActionListener {//いつ�
         }
         save.addActionListener(this);
         p1.add(save);
+        this.setLayout(new BorderLayout());
         this.add(p1, BorderLayout.SOUTH);
         this.add(p2,BorderLayout.EAST);
         this.add(panel, BorderLayout.CENTER);

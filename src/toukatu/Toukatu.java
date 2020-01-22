@@ -12,7 +12,7 @@ import game.*;
 
 /* 定数のimport */
 import static start.StartManager.START_GAME;
-// import static start.START_EDIT;
+import static start.StartManager.START_EDIT;
 import static start.StartManager.START_QUIT;
 import static start.StartManager.START_UPDATE;
 
@@ -22,18 +22,19 @@ import static start.StartManager.START_UPDATE;
 public class Toukatu extends JFrame implements Observer{
     StartManager start;
     GamePanel gp;
+    StageEditPanel sep;
     // ResultManager result;
 
     private int toukatuState;
 
-    private static final int START = 0;
-    private static final int GAME = 1;
-    private static final int EDIT = 2;
-    private static final int RESULT = 3;
+    private static final int TOUKATU_START = 0;
+    private static final int TOUKATU_GAME = 1;
+    private static final int TOUKATU_EDIT = 2;
+    private static final int TOUKATU_RESULT = 3;
 
 
     public Toukatu() {
-        toukatuState = START;
+        toukatuState = TOUKATU_START;
 
         // スタート画面のセットアップ.
         start = new StartManager();
@@ -50,17 +51,29 @@ public class Toukatu extends JFrame implements Observer{
 
     public void update(Observable o, Object arg){
         switch(toukatuState){
-            case START:
+            case TOUKATU_START:
                 switch(start.updateStart()){ // 選択したコマンドに応じた実行.
                     case START_GAME:
                         this.getContentPane().removeAll();
-                        toukatuState = GAME;
+                        toukatuState = TOUKATU_GAME;
                         try {
                             gp = new GamePanel("map5.txt");
-                        } catch(IOException e){
+                        } catch(IOException e) {
                             System.out.println("ゲーム部分に関するエラー");
                         }
                         this.add(gp, BorderLayout.CENTER);
+                        this.revalidate();
+                        this.repaint();
+                        break;
+                    case START_EDIT:
+                        this.getContentPane().removeAll();
+                        toukatuState = TOUKATU_EDIT;
+                        try {
+                            sep = new StageEditPanel();
+                        } catch(IOException e) {
+                            System.out.println("ステージエディト部分に関するエラー");
+                        }
+                        this.add(sep, BorderLayout.CENTER);
                         this.revalidate();
                         this.repaint();
                         break;
