@@ -14,4 +14,8 @@ public class BaseCommandLabel extends JLabel {
     public BaseCommandLabel(BaseCommandModel model) {
         this.setText(model.getCommand());
     }
+
+    public void changeFont(String fontName, int fontSize) {
+      this.setFont(new Font(fontName, Font.PLAIN, fontSize));
+    }
 }

@@ -29,16 +29,19 @@ public class StartManager extends JPanel {
 
         /* BaseSelectのMVCを呼ぶ */
         this.model = new BaseSelectModel(cmds);
-        view = new BaseSelectView(model);
+        view = new BaseSelectView(model, "MS ゴシック", 30
+        );
         controller = new BaseSelectController(model);
         this.addKeyListener(controller); // ここのコンポーネントに対する入力をBaseSelectControllerが受け付けるようにする.
 
 
         //画面のタイトル（title）と操作説明部分（notice）
-        JLabel title = new JLabel("†陣地防衛ゲーム†");
+        JLabel title = new JLabel("Submission Impossible");
         title.setHorizontalAlignment(JLabel.CENTER);
-        JLabel notice = new JLabel("↑↓キーで選択　Enterキーで決定");
+        title.setFont(new Font("Impact", Font.PLAIN, 60));
+        JLabel notice = new JLabel("select : ↑↓　 Press Enter");
         notice.setHorizontalAlignment(JLabel.CENTER);
+        notice.setFont(new Font("MS ゴシック", Font.PLAIN, 40));
 
 
         //画面にテキストを表示する
