@@ -29,11 +29,7 @@ public class BaseSelectView extends JPanel {
         cmdsPanel.setLayout(new GridLayout(cmdSize, 1));
         for(BaseCommandModel m : commands) {
             BaseCommandLabel l = new BaseCommandLabel(m);
-<<<<<<< HEAD
             l.changeFont(fontName, fontSize);
-=======
-            l.setFont(new Font("MS ゴシック", Font.PLAIN, 30));
->>>>>>> 7ba6c780ee9f51a191f8bccb7b63b9f98dd86112
             cmdsPanel.add(l);
         }
         cursorPanel.add(cursor);
