@@ -145,6 +145,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     public GameScreen(String file) throws IOException {
         map = new Map(file);
         sp = SoundPlayer.getInstance();
+        sp.playBGM("game/game_bgm.wav");
         mapImage = createImage("game/MapTile.png", 1);
         haniImage = createImage("game/Hani.png", 3);
         width = mapImage.getWidth();//サイズ設定
@@ -265,7 +266,12 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     characterTmp = map.getCharaPosition(tmp_x/32, tmp_y/32);//一時変数に元の位置のキャラを保存する
                     state.setMakeGraphic(false);//範囲は処理の軽減のため新たに画像を生成しなくする
                     timer = new Timer(10, this);//アニメーション
-                    //TODO:ここでif(オタク)sp.SE(オタクダッシュ)を流すelseは普通の足音
+                    // TODO 音楽流す, 分岐条件考える
+                    if(map.getClassType == '2') {
+                        sp.playSE("game/otaku_walk.wav");
+                    }else {
+                        sp.playSE("game/normal_walk.wav");
+                    }
                     timer.start();//開始
                     map.haniMapInit();//範囲を適切に設定しなおし後で描画
                     characterTmp.setMoveSelected(true);//移動し終わったという設定をキャラにつける
@@ -293,8 +299,12 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                         modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+" が<br/>"+c.getName()+"を召喚");//テキストログ
                     }
                 }
-                //TODO:ここにif(陽キャ)sp = play.se("way")をやるelseはなんか別の流す
-                sp.playSE("game/yokya_way.wav");
+                // TODO 音が愚を流す, 分岐条件考える
+                if(c.getClassType == '3') {
+                    sp.playSE("game/yokya_way.wav");
+                }else {
+                    sp.playSE("game/summon.wav");
+                }
                 state.setNowSummon(null);//またボタンを押して召喚するものを選んだほうが安全
 
             } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){//戦闘コマンド
