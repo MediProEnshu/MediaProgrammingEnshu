@@ -267,7 +267,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     state.setMakeGraphic(false);//範囲は処理の軽減のため新たに画像を生成しなくする
                     timer = new Timer(10, this);//アニメーション
                     // TODO 音楽流す, 分岐条件考える
-                    if(map.getClassType == '2') {
+                    if(characterTmp.getClassType() == '2') {
                         sp.playSE("game/otaku_walk.wav");
                     }else {
                         sp.playSE("game/normal_walk.wav");
@@ -300,7 +300,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     }
                 }
                 // TODO 音が愚を流す, 分岐条件考える
-                if(c.getClassType == '3') {
+                if(c.getClassType() == '3') {
                     sp.playSE("game/yokya_way.wav");
                 }else {
                     sp.playSE("game/summon.wav");
