@@ -155,7 +155,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
         g.drawImage(mapImage, 0, 0, this);//マップを描画
         for(int i = 0; i < map.getListSize(1); i++) {//プレイヤー1のキャラクターを描画
             try {
-                g.drawImage(map.getList(1).get(i).getGraphic(),map.getList(1).get(i).getPosition().x, map.getList(1).get(i).getPosition().y, this);     
+                g.drawImage(map.getList(1).get(i).getGraphic(),map.getList(1).get(i).getPosition().x, map.getList(1).get(i).getPosition().y, this);
             } catch (Exception e) {
                 //TODO: handle exception
                 System.err.println("ErrorInSetGraphic");
@@ -163,7 +163,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
         }
         for(int i = 0; i < map.getListSize(2); i++) {//プレイヤー2のキャラを描画
             try {
-                g.drawImage(map.getList(2).get(i).getGraphic(), map.getList(2).get(i).getPosition().x, map.getList(2).get(i).getPosition().y, this);            
+                g.drawImage(map.getList(2).get(i).getGraphic(), map.getList(2).get(i).getPosition().x, map.getList(2).get(i).getPosition().y, this);
             } catch (Exception e) {
                 //TODO: handle exception
                 System.err.println("ErrorInSetGraphic");
@@ -196,7 +196,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                 if(type == 1) {
                     g.drawImage(tileset.getTile(map.getStageMapCode(x, y)), gX, gY, null);//マップの描画
                 } else {
-                    g.drawImage(tileset.getTile(map.getHaniMapCode(x, y)), gX, gY, null);//選択範囲の描画          
+                    g.drawImage(tileset.getTile(map.getHaniMapCode(x, y)), gX, gY, null);//選択範囲の描画
                 }
                 gY += TileSize;//タイルの大きさ分横にずらす
             }
@@ -255,8 +255,8 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
             }
             map.charaPositionInit();//一度ここでキャラの位置情報を更新
             if(state.getMoveFlag() == true && state.getBattleFlag() == false && state.getSummonFlag() == false) {//移動コマンドの時
-                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getMoveSelected() == false && 
-                state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer() && 
+                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getMoveSelected() == false &&
+                state.getNowPlayer() == map.getCharaPosition(array_x, array_y).getPlayer() &&
                 !(map.getCharaPosition(array_x, array_y).getClassType() == 'D' || map.getCharaPosition(array_x, array_y).getClassType() == 'E')) {//ここの条件長いけど
                     //キャラがいないマス、既に移動したキャラ、操作プレイヤーのものではないキャラを弾いてる,拠点も弾いてたわ
                     tmp_x = rect_x; tmp_y = rect_y;//移動前のクリックした段階での座標を持つ
@@ -294,11 +294,12 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     }
                 }
                 //TODO:ここにif(陽キャ)sp = play.se("way")をやるelseはなんか別の流す
+                sp.playSE("game/yokya_way.wav");
                 state.setNowSummon(null);//またボタンを押して召喚するものを選んだほうが安全
 
             } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){//戦闘コマンド
-               
-                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false && 
+
+                if(map.getCharaPosition(array_x, array_y) != null && map.getCharaPosition(array_x, array_y).getBattleSelected() == false &&
                     battleSelectflag == false && map.getCharaPosition(array_x, array_y).getPlayer() == state.getNowPlayer()) {
                     //長いけどキャラ選択した時点でそこがキャラがいないマスじゃなくて、選択したキャラが戦闘済みじゃなくて、
                     //攻撃させるキャラを選択する前で、選択したキャラが自分のキャラクターかを判定する
@@ -352,7 +353,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                 } else {
                     attack = "できない";
                 }
-                modelMapInfo.changeText("<html>プレイヤー:"+ map.getCharaPosition(array_x, array_y).getPlayer() +"<br />"+ 
+                modelMapInfo.changeText("<html>プレイヤー:"+ map.getCharaPosition(array_x, array_y).getPlayer() +"<br />"+
                 map.getCharaPosition(array_x, array_y).getName() +"<br />残りHP:"+
                 map.getCharaPosition(array_x, array_y).getHitPoint() + "<br />人に対する攻撃力:" +
                 map.getCharaPosition(array_x, array_y).getAttackPoint() + "<br />拠点に対する攻撃力:" +
@@ -512,23 +513,23 @@ class BaseCharacter {
         } else if(character == 'E') {
             tile = new ImportTile("game/Character.png");
             if(player == 1) {
-                icon[1] = tile.getTile('E'); 
+                icon[1] = tile.getTile('E');
                 icon[2] = tile.getTile('E');
-                icon[3] = tile.getTile('E'); 
-                icon[0] = tile.getTile('E'); 
+                icon[3] = tile.getTile('E');
+                icon[0] = tile.getTile('E');
             } else {
-                icon[0] = tile.getTile('D'); 
-                icon[1] = tile.getTile('D'); 
+                icon[0] = tile.getTile('D');
+                icon[1] = tile.getTile('D');
                 icon[2] = tile.getTile('D');
-                icon[3] = tile.getTile('D'); 
+                icon[3] = tile.getTile('D');
             }
             graphic = icon[0];
             return;
         }
-        icon[0] = tile.getTile('0'); 
-        icon[1] = tile.getTile('4'); 
+        icon[0] = tile.getTile('0');
+        icon[1] = tile.getTile('4');
         icon[2] = tile.getTile('8');
-        icon[3] = tile.getTile('C'); 
+        icon[3] = tile.getTile('C');
         graphic = icon[0];
     }
     public BufferedImage getGraphic() throws IOException{//グラフィックのゲッター
@@ -834,7 +835,7 @@ class Map {//マップを生成するクラス
                 break;
             }
         }
-        
+
     }
     public void paintbattleRange(int x, int y) {//攻撃できる範囲を塗りつぶす
         for(int i = 0; i <= 1; i++) {
@@ -1004,7 +1005,7 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
         this.add(p1, BorderLayout.SOUTH);
         this.add(p2,BorderLayout.EAST);
         this.add(panel, BorderLayout.CENTER);
-        this.pack(); 
+        this.pack();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
     }
@@ -1188,9 +1189,9 @@ public class GamePanel extends JPanel implements ActionListener{
         p2.setLayout(new GridLayout(3, 1));
         textLog = new DynamicTextLabel(screen.modelTextLog);
         mapInfo = new DynamicTextLabel(screen.modelMapInfo);
-        mana = new DynamicTextLabel(screen.state.manaTextModel); 
-        textLog.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 14)); 
-        mapInfo.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 14)); 
+        mana = new DynamicTextLabel(screen.state.manaTextModel);
+        textLog.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 14));
+        mapInfo.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 14));
         mana.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 16));
         mana.setBackground(Color.GREEN);
         p2.add(p3);
