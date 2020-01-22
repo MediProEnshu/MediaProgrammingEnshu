@@ -16,8 +16,8 @@ public class StartManager extends JPanel {
 
     /* スタート画面での各処理用の定数、コマンドの位置と対応させる. */
     public static final int START_GAME = 0;
-    // public static final int START_EDIT = 1;
-    public static final int START_QUIT = 1;
+    public static final int START_EDIT = 1;
+    public static final int START_QUIT = 2;
     public static final int START_UPDATE = 99;
 
     private int start_state; // 選択したボタンに応じて値が変化する（統括への通知用）
@@ -25,7 +25,7 @@ public class StartManager extends JPanel {
     public StartManager() {
         start_state = -1; // 初期化. 選ばれていない状態.
 
-        String[] cmds = {"ゲームを始める", "ゲームを終わる" }; // コマンドを追加
+        String[] cmds = {"ゲームを始める", "ステージを作る", "ゲームを終わる" }; // コマンドを追加
 
         /* BaseSelectのMVCを呼ぶ */
         this.model = new BaseSelectModel(cmds);
