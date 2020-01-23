@@ -23,6 +23,7 @@ public class Toukatu extends JFrame implements Observer{
     StartManager start;
     GamePanel gp;
     StageEditPanel sep;
+    StageEditModel sem;
     // ResultManager result;
 
     private int toukatuState;
@@ -43,7 +44,7 @@ public class Toukatu extends JFrame implements Observer{
         this.addKeyListener(start.getController());
 
         // 画面の表示処理
-        this.setSize(1000, 600);
+        this.setSize(1300, 960);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -69,7 +70,8 @@ public class Toukatu extends JFrame implements Observer{
                         this.getContentPane().removeAll();
                         toukatuState = TOUKATU_EDIT;
                         try {
-                            sep = new StageEditPanel();
+                            sem = new StageEditModel();
+                            sep = new StageEditPanel(sem);
                         } catch(IOException e) {
                             System.out.println("ステージエディト部分に関するエラー");
                         }
@@ -87,6 +89,16 @@ public class Toukatu extends JFrame implements Observer{
                     default:
                         System.out.println("Toukatuの実行中に原因不明のエラーが発生しました.");
                         new QuitGame();
+                }
+                break;
+            case TOUKATU_EDIT:
+                if(sem.isQuit()) {
+                    toukatuState = TOUKATU_START;
+                    this.getContentPane().removeAll();
+                    start = new StartManager();
+                    start.model.addObserver(this);
+                    this.add(start, BorderLayout.CENTER);
+                    this.addKeyListener(start.getController());
                 }
                 break;
         }
