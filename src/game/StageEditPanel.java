@@ -56,7 +56,8 @@ class StageEdit extends Map{//エディタのMにあたる部分
         super(s);
     }
 }
-public class StageEditPanel extends JPanel implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditPanel()をどっかでやればいいはず.
+public class StageEditPanel extends JPanel implements ActionListener, KeyListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditPanel()をどっかでやればいいはず.
+    StageEditModel model;
     StageEditScreen screen;//ゲーム画面用の変数
     JButton save = new JButton("save");//押すと現在のエディタのマップがテキストファイルに保存される
     JButton b [] = new JButton[16];//タイル
@@ -65,7 +66,8 @@ public class StageEditPanel extends JPanel implements ActionListener {//いつ�
     JPanel p3;
     JButton autoMapCreate;
     ImportTile tile;
-    public StageEditPanel() throws IOException {
+    public StageEditPanel(StageEditModel sem) throws IOException {
+        model = sem;
         JPanel panel = new JPanel();
         tile = new ImportTile("game/MapTile.png");
         screen = new StageEditScreen("map6.txt");
@@ -150,4 +152,18 @@ public class StageEditPanel extends JPanel implements ActionListener {//いつ�
             screen.repaint();
         }
     }
+
+    /* キーボード入力 */
+    public void keyPressed(KeyEvent e) {
+        int k = e.getKeyCode();
+        switch(k){
+            /* Qキーを押された場合 => スタート画面に戻る */
+            case KeyEvent.VK_Q:
+                model.toBack();
+                break;
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {}
 }

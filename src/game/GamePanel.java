@@ -300,7 +300,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     }
                 }
                 // TODO 音が愚を流す, 分岐条件考える
-                if(c.getClassType() == '3') {
+                if(c.getClassType() == '2') {
                     sp.playSE("game/yokya_way.wav");
                 }else {
                     sp.playSE("game/summon.wav");
@@ -328,11 +328,11 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                         damage = battleCharacter.getAttackToBuilding();
                     }
                     //TODO:ダメージ音流したい
-                    if(battleCharacter.getClassType() == '4') {
-                        modelTextLog.changeText("<html>player<body>"+battleCharacter.getPlayer()+"<br/>の"+battleCharacter.getName()+"<br/>が"
+                    if(battleCharacter.getClassType() == '3') {
+                        modelTextLog.changeText("<html>player<body>"+battleCharacter.getPlayer()+"<br/>の"+battleCharacter.getName()+"<br/>がplayer"
                         + battledCharacter.getPlayer() + "の"+ battledCharacter.getName() +"<br/>を"+ -damage + "回復させた</html>");//テキストログ
                     } else {
-                        modelTextLog.changeText("<html>player<body>"+battleCharacter.getPlayer()+"<br/>の"+battleCharacter.getName()+"<br/>が"
+                        modelTextLog.changeText("<html>player<body>"+battleCharacter.getPlayer()+"<br/>の"+battleCharacter.getName()+"<br/>がplayer"
                         + battledCharacter.getPlayer() + "の"+ battledCharacter.getName() +"<br/>に"+ damage + "ダメージを与えた</html>");//テキストログ
                     }
                     if(battledCharacter.isDead() == true) {//戦闘でHPが0になったとき
@@ -1255,6 +1255,6 @@ public class GamePanel extends JPanel implements ActionListener{
         } else if(e.getSource() == b9) {
             screen.state.setNowSummon(new Kyoju(0, 0, screen.state.getNowPlayer()));
         }
-        screen.repaint();
+        repaint();
     }
 }
