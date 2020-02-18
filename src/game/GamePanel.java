@@ -267,9 +267,12 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     state.setMakeGraphic(false);//範囲は処理の軽減のため新たに画像を生成しなくする
                     timer = new Timer(10, this);//アニメーション
                     // TODO 音楽流す, 分岐条件考える
+<<<<<<< HEAD
+=======
                     if(characterTmp.getClassType() == '2') {
                         sp.playSE("game/otaku_walk.wav");
                     }else {
+>>>>>>> d157426b2bedf05cd519f3c5dc79f7f048645812
                         sp.playSE("game/normal_walk.wav");
                     timer.start();//開始
                     map.haniMapInit();//範囲を適切に設定しなおし後で描画
@@ -299,11 +302,15 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     }
                 }
                 // TODO 音が愚を流す, 分岐条件考える
+<<<<<<< HEAD
+                sp.playSE("game/summon.wav");
+=======
                 if(c.getClassType() == '3') {
                     sp.playSE("game/yokya_way.wav");
                 }else {
                     sp.playSE("game/summon.wav");
                 }
+>>>>>>> d157426b2bedf05cd519f3c5dc79f7f048645812
                 state.setNowSummon(null);//またボタンを押して召喚するものを選んだほうが安全
 
             } else if (state.getMoveFlag() == false && state.getBattleFlag() == true && state.getSummonFlag() == false){//戦闘コマンド

@@ -89,6 +89,18 @@ public class Toukatu extends JFrame implements Observer{
                         new QuitGame();
                 }
                 break;
+            case TOUKATU_GAME:
+                if(gp.isFinished) {
+                    toukatuState = TOUKATU_RESULT;
+                    rp = new ResultPanel();
+                    this.getContentPane.removeAll();
+                    this.add(rp, BorderLayout.CENTER);
+                    this.revalidate();
+                    this.repaint();
+                }
+                break;
+            case TOUKATU_RESULT:
+                new QuitGame();
         }
     }
 
