@@ -8,22 +8,23 @@ import java.util.*;
 import base.*;
 import start.*;
 import game.*;
-// import result.*;
+import result.*;
 
 /* 定数のimport */
 import static start.StartManager.START_GAME;
 import static start.StartManager.START_EDIT;
 import static start.StartManager.START_QUIT;
 import static start.StartManager.START_UPDATE;
-
+import static game.GameEscape.GAME_RESULT;
+import static game.GameEscape.GAME_START;
 
 /* View */
 /////////////////////////////////////////////////////////
 public class Toukatu extends JFrame implements Observer{
     StartManager start;
     GamePanel gp;
-    StageEditPanel sep;
-    // ResultManager result;
+    GameEscape ge;
+    ResultPanel rp;
 
     private int toukatuState;
 
@@ -49,15 +50,17 @@ public class Toukatu extends JFrame implements Observer{
     }
 
 
-    public void update(Observable o, Object arg){
-        switch(toukatuState){
+    public void update(Observable o, Object arg) {
+        switch(toukatuState) {
             case TOUKATU_START:
-                switch(start.updateStart()){ // 選択したコマンドに応じた実行.
+                switch(start.updateStart()) { // 選択したコマンドに応じた実行.
                     case START_GAME:
                         this.getContentPane().removeAll();
                         toukatuState = TOUKATU_GAME;
                         try {
-                            gp = new GamePanel("map5.txt");
+                            ge = new GameEscape();
+                            ge.addObserver(this);
+                            gp = new GamePanel("map5.txt", ge);
                         } catch(IOException e) {
                             System.out.println("ゲーム部分に関するエラー");
                         }
@@ -69,11 +72,13 @@ public class Toukatu extends JFrame implements Observer{
                         this.getContentPane().removeAll();
                         toukatuState = TOUKATU_EDIT;
                         try {
-                            sep = new StageEditPanel();
+                            ge = new GameEscape();
+                            ge.addObserver(this);
+                            gp = new GamePanel("map6.txt", ge);
                         } catch(IOException e) {
                             System.out.println("ステージエディト部分に関するエラー");
                         }
-                        this.add(sep, BorderLayout.CENTER);
+                        this.add(gp, BorderLayout.CENTER);
                         this.revalidate();
                         this.repaint();
                         break;
@@ -90,13 +95,17 @@ public class Toukatu extends JFrame implements Observer{
                 }
                 break;
             case TOUKATU_GAME:
-                if(gp.isFinished) {
-                    toukatuState = TOUKATU_RESULT;
-                    rp = new ResultPanel();
-                    this.getContentPane.removeAll();
-                    this.add(rp, BorderLayout.CENTER);
-                    this.revalidate();
-                    this.repaint();
+                switch(ge.getGameState()) {
+                    case GAME_RESULT:
+                        this.getContentPane().removeAll();
+                        rp = new ResultPanel();
+                        this.add(rp, BorderLayout.CENTER);
+                        this.revalidate();
+                        this.repaint();
+                        break;
+                    case GAME_START:
+                        new QuitGame();
+                        break;
                 }
                 break;
             case TOUKATU_RESULT:
