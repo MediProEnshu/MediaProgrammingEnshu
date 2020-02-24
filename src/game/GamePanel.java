@@ -303,7 +303,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     }
                 }
                 // TODO 音が愚を流す, 分岐条件考える
-                if(c.getClassType() == '3') {
+                if(c.getClassType() == '2') {
                     sp.playSE("game/yokya_way.wav");
                 }else {
                     sp.playSE("game/summon.wav");
