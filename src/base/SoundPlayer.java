@@ -59,6 +59,7 @@ public class SoundPlayer {
             Clip c = (Clip)AudioSystem.getLine(dataLine);
             c.open(ais);
             return c;
+        /* 何かしらのエラーが起きた場合 => スタックトレースを流す */
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (UnsupportedAudioFileException e) {
