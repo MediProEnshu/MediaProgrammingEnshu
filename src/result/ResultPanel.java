@@ -73,5 +73,7 @@ public class ResultPanel extends JPanel {
         this.removeAll();
         view.add(endMessage, BorderLayout.CENTER);
         this.add(view, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 }
