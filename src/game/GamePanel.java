@@ -141,8 +141,11 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     DynamicTextModel modelTextLog = new DynamicTextModel("テキストログ");//テキストログのモデル
     DynamicTextModel modelMapInfo = new DynamicTextModel(" ");//マップ情報を出すラベルのモデル
     SoundPlayer sp;
+    GameEscape escape;
     int step = 1;//移動の時に使う。ステップ一が縦移動でステップ2が横移動
-    public GameScreen(String file) throws IOException {
+
+    public GameScreen(String file, GameEscape ge) throws IOException {
+        escape = ge;
         map = new Map(file);
         sp = SoundPlayer.getInstance();
         sp.playBGM("game/game_bgm.wav");
@@ -299,6 +302,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                         modelTextLog.changeText("<html>player<body>"+state.getNowPlayer()+" が<br/>"+c.getName()+"を召喚");//テキストログ
                     }
                 }
+                // TODO 音が愚を流す, 分岐条件考える
                 if(c.getClassType() == '3') {
                     sp.playSE("game/yokya_way.wav");
                 }else {
@@ -337,7 +341,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     if(battledCharacter.isDead() == true) {//戦闘でHPが0になったとき
                         map.deleteCharacter(battledCharacter, battledCharacter.getPlayer());//マップからキャラを削除する
                         if(battledCharacter.getClassType() == 'E' || battledCharacter.getClassType() == 'D'){//拠点だったらゲーム終了
-                        System.exit(0);//ひとまずは強制終了にしてる。ここからリザルト画面にうつるのかな
+                            escape.toResult();
                         } else {
                             //TODO:叫びを流したい
                         }
@@ -410,7 +414,8 @@ class Kyoju extends BaseCharacter {//教授。人に対して高い攻撃力だ�
 }
 class Kyoten extends BaseCharacter {//拠点
     public Kyoten(int x, int y, int player) {
-        super(25, "拠点", x, y, player, 'E', 0, 0, 4, 0);//ひとまず
+        super(1, "拠点", x, y, player, 'E', 0, 0, 4, 0);//ひとまず
+        //TODO HPを25に直す
     }
 }
 class ImportTile extends Component {//タイルチップを読み込むクラス
@@ -763,8 +768,8 @@ class Map {//マップを生成するクラス
 }
 
 class StageEditScreen extends GameScreen implements MouseListener{//エディタのViewにあたる部分
-    public StageEditScreen(String file) throws IOException {
-        super(file);
+    public StageEditScreen(String file, GameEscape ge) throws IOException {
+        super(file, ge);
     }
     @Override
     public void paintComponent(Graphics g){
@@ -810,9 +815,9 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
     JPanel p3;
     JButton autoMapCreate;
     ImportTile tile = new ImportTile("game/MapTile.png");
-    public StageEditFrame() throws IOException {
+    public StageEditFrame(GameEscape ge) throws IOException {
         JPanel panel = new JPanel();
-        screen = new StageEditScreen("game/map6.txt");
+        screen = new StageEditScreen("game/map6.txt", ge);
         p1=new JPanel();p2=new JPanel(); p3 = new JPanel();
         b[0] = new JButton(new ImageIcon(tile.getTile('.')));
         b[1] = new JButton(new ImageIcon(tile.getTile('0')));
@@ -914,9 +919,11 @@ public class GamePanel extends JPanel implements ActionListener{
     DynamicTextLabel mana;
     DynamicTextLabel textLog;
     DynamicTextLabel mapInfo;
-    public GamePanel(String file) throws IOException {
+    GameEscape escape;
+    public GamePanel(String file, GameEscape ge) throws IOException {
+        escape = ge;
         JPanel panel = new JPanel();
-        screen = new GameScreen(file);
+        screen = new GameScreen(file, escape);
         panel.setLayout(new GridLayout(1, 1));
         panel.add(screen);
         JPanel  p1=new JPanel(),p2=new JPanel();

@@ -9,7 +9,7 @@ import base.*;
 
 /* View */
 /////////////////////////////////////////////////////////
-public class ResultSelect extends JPanel implements ActionListener{
+public class ResultPanel extends JPanel implements ActionListener{
     BaseSelectModel model;
     BaseSelectView view;
     BaseSelectController controller;
@@ -24,11 +24,11 @@ public class ResultSelect extends JPanel implements ActionListener{
     //ゲーム終了時（Start2Quit）に使う,utilにもTimerがあるため冗長になってる
     private javax.swing.Timer timer;
 
-    public ResultSelect() {
+    public ResultPanel() {
         String[] cmds = {"もう一回プレイする", "ゲーム終了"}; // コマンドを追加
         /* BaseSelectのMVCを呼ぶ */
         model = new BaseSelectModel(cmds);
-        view = new BaseSelectView(model);
+        view = new BaseSelectView(model, "MS ゴシック", 30);
         controller = new BaseSelectController(model);
 
 	//画面のタイトル（Title）と操作説明部分（Notice）
@@ -113,6 +113,6 @@ public class ResultSelect extends JPanel implements ActionListener{
 
     /* main関数 */
     public static void main(String argv[]) {
-        new ResultSelect();
+        new ResultPanel();
     }
 }
