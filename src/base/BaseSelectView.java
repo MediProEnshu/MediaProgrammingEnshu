@@ -23,7 +23,7 @@ public class BaseSelectView extends JPanel {
         cmdSize = model.getCommandSize();
         cursorPanel = new JPanel();
         cmdsPanel = new JPanel();
-        cursor = new CursorLabel(/* font size = */ 16);
+        cursor = new CursorLabel(/* font size = */ 30);
 
         cursorPanel.setLayout(new GridLayout(cmdSize, 1));
         cmdsPanel.setLayout(new GridLayout(cmdSize, 1));
