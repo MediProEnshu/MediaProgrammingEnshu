@@ -49,12 +49,12 @@ public class StartManager extends JPanel {
     }
 
     /* 擬似的なUpdate(). 情報を更新された結果を返す. */
-    public int updateStart(){
-        if ( model.getIsDetermined() ){ // 決定ボタンを押されていた場合.
+    public int updateStart() {
+        if ( model.getIsDetermined() ) { // 決定ボタンを押されていた場合.
             start_state = model.getCurrentPosition(); // コマンドの位置
             model.fleezeSelect(); // 選択入力の凍結(監視の取りやめ).
-        }else{ // カーソルを動かした場合.
-          start_state = START_UPDATE;
+        }else { // カーソルを動かした場合.
+            start_state = START_UPDATE;
             view.updateLabel();
             this.revalidate();
             this.repaint();
@@ -63,7 +63,7 @@ public class StartManager extends JPanel {
         return start_state;
     }
 
-    public BaseSelectController getController(){
+    public BaseSelectController getController() {
         return controller;
     }
 
@@ -71,10 +71,10 @@ public class StartManager extends JPanel {
     ///toQuit : start画面からゲーム終了（ウインドウを閉じる）への遷移、2秒後にすべてのウインドウを閉じる
     ///
     public void toQuit(){
-        JLabel result = new JLabel("ゲームを終了しています…");
+        JLabel endMessage = new JLabel("ゲームを終了しています…");
         view.removeAll();
         this.removeAll();
-        view.add(result, BorderLayout.CENTER);
+        view.add(endMessage, BorderLayout.CENTER);
         this.add(view, BorderLayout.CENTER);
     }
 }

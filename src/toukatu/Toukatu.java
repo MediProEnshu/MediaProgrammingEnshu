@@ -17,6 +17,9 @@ import static start.StartManager.START_QUIT;
 import static start.StartManager.START_UPDATE;
 import static game.GameEscape.GAME_RESULT;
 import static game.GameEscape.GAME_START;
+import static result.ResultPanel.RESULT_START;
+import static result.ResultPanel.RESULT_QUIT;
+import static result.ResultPanel.RESULT_UPDATE;
 
 /* View */
 /////////////////////////////////////////////////////////
@@ -90,16 +93,19 @@ public class Toukatu extends JFrame implements Observer{
                         // do nothing;
                         break;
                     default:
-                        System.out.println("Toukatuの実行中に原因不明のエラーが発生しました.");
+                        System.out.println("ゲーム画面でコマンド選択エラーが発生しました.");
                         new QuitGame();
                 }
                 break;
             case TOUKATU_GAME:
                 switch(ge.getGameState()) {
                     case GAME_RESULT:
+                        toukatuState = TOUKATU_RESULT;
                         this.getContentPane().removeAll();
                         rp = new ResultPanel();
+                        rp.model.addObserver(this);
                         this.add(rp, BorderLayout.CENTER);
+                        this.addKeyListener(rp.getController());
                         this.revalidate();
                         this.repaint();
                         break;
@@ -109,7 +115,28 @@ public class Toukatu extends JFrame implements Observer{
                 }
                 break;
             case TOUKATU_RESULT:
-                new QuitGame();
+                switch(rp.updateResult()) { // 選択したコマンドに応じた実行.
+                    case RESULT_START:
+                        this.getContentPane().removeAll();
+                        toukatuState = TOUKATU_START;
+                        start = new StartManager();
+                        start.model.addObserver(this);
+                        this.add(start, BorderLayout.CENTER);
+                        this.addKeyListener(start.getController());
+                        this.revalidate();
+                        this.repaint();
+                        break;
+                    case RESULT_QUIT:
+                        rp.toQuit();
+                        new QuitGame();
+                        break;
+                    case RESULT_UPDATE:
+                        // do nothing;
+                        break;
+                    default:
+                        System.out.println("リザルト画面でコマンド選択エラーが発生しました.");
+                        new QuitGame();
+            }
         }
     }
 
