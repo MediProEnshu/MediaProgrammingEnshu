@@ -141,8 +141,11 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     DynamicTextModel modelTextLog = new DynamicTextModel("テキストログ");//テキストログのモデル
     DynamicTextModel modelMapInfo = new DynamicTextModel(" ");//マップ情報を出すラベルのモデル
     SoundPlayer sp;
+    GameEscape escape;
     int step = 1;//移動の時に使う。ステップ一が縦移動でステップ2が横移動
-    public GameScreen(String file) throws IOException {
+
+    public GameScreen(String file, GameEscape ge) throws IOException {
+        escape = ge;
         map = new Map(file);
         sp = SoundPlayer.getInstance();
         sp.playBGM("game/game_bgm.wav");
@@ -275,6 +278,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     map.haniMapInit();//範囲を適切に設定しなおし後で描画
                     characterTmp.setMoveSelected(true);//移動し終わったという設定をキャラにつける
                     modelTextLog.changeText("<html>player<body>"+characterTmp.getPlayer()+"<br/>の"+characterTmp.getName()+"<br/>が移動");//テキストログの設定
+                  }
                 }
             } else if(state.getMoveFlag() == false && state.getBattleFlag() == false && state.getSummonFlag() == true && map.getHaniMapCode(array_x, array_y) == '1') {//召喚ボタンが押されて召喚できるマスだったとき
                 if(state.getNowSummon() == null) {//今召喚するものが選択されてないときは弾く
@@ -337,7 +341,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
                     if(battledCharacter.isDead() == true) {//戦闘でHPが0になったとき
                         map.deleteCharacter(battledCharacter, battledCharacter.getPlayer());//マップからキャラを削除する
                         if(battledCharacter.getClassType() == 'E' || battledCharacter.getClassType() == 'D'){//拠点だったらゲーム終了
-                        System.exit(0);//ひとまずは強制終了にしてる。ここからリザルト画面にうつるのかな
+                            escape.toResult();
                         } else {
                             //TODO:叫びを流したい
                         }
@@ -381,173 +385,7 @@ class GameScreen extends JPanel implements MouseListener,ActionListener{
     public void mousePressed(MouseEvent e) { }
 }
 
-class BaseCharacter {
-    private int x = 0;//x座標
-    private int y = 0;//y座標
-    private int attackPoint;//人に対する攻撃力
-    private int attackToBuilding;//建物に対する攻撃力
-    private int maxHitPoint;//最大HP
-    private int hitPoint;//HP
-    private String imagePath;//キャラのグラフィックの実装を変えたとき陽
-    private String name; //キャラの名前
-    private int player;//プレイヤー1か2か
-    BufferedImage [] icon = new BufferedImage [4];
-    BufferedImage graphic;
-    private char classType;//キャラクターを表す記号。いまのところこれとタイルを対応させてる
-    private int speed;//何マス動けるか
-    private int cost;//召喚するのにマナいくつ必要か
-    private boolean moveSelected;//移動したか。1ターンに移動は一回だけ.trueはし終わった状態を指す
-    private boolean battleSelected;//攻撃したか//1ターンに攻撃は1回だけ
-    public BaseCharacter(int hp, String name, int x, int y,int player, char classType, int attackPoint, int attackToBuilding, int speed, int cost) {
-        if(hp < 0){ hp = 0; } // 不適切なヒットポイントの修正
-        maxHitPoint = hp;
-        hitPoint = hp;
-        this.x = x;
-        this.y = y;
-        this.name = name;
-        this.player = player;
-        this.classType = classType;
-        this.attackPoint = attackPoint;
-        this.attackToBuilding = attackToBuilding;
-        this.speed = speed;
-        this.cost = cost;
 
-        try {
-            setGraphic(classType); //画像をここでセット
-        } catch (Exception e) {
-            //TODO: handle exception
-            System.err.println("ErrorInSetGraphic");
-        }
-        moveSelected = false;
-        battleSelected = false;
-    }
-    public String getImagePath() {//ファイル名を返す
-        return imagePath;
-    }
-    public void setImagePath(String pathString) {//セッター
-        imagePath = pathString;
-    }
-    public String getName() {//キャラ名を取得
-        return name;
-    }
-    public int getPlayer() {//キャラがどのプレイヤーのものか取得
-        return player;
-    }
-    public void move(int x, int y) {//移動処理
-        this.x = x;
-        this.y = y;
-    }
-    public Point getPosition() {//現座標をPoint型で返す
-        Point p = new Point();
-        p.x = x;
-        p.y = y;
-        return p;
-    }
-    public char getClassType() {//クラス名を取得.配列に対応させる時に使う
-        return classType;
-    }
-    /* ヒットポイントを返す. */
-    public int getHitPoint() {//今のHPを取得
-        return hitPoint;
-    }
-    public int getAttackPoint() {//人に対する攻撃力を取得
-        return attackPoint;
-    }
-    public int getAttackToBuilding() {//拠点に対する攻撃力
-        return attackToBuilding;
-    }
-    /* このキャラクターは絶命した? */
-    public boolean isDead() {//志望判定
-        return hitPoint <= 0;
-    }
-    public int getSpeed() {//動けるマス数を取得
-        return speed;
-    }
-    public int getCost() {//召喚に必要なマナを取得
-        return cost;
-    }
-    public boolean getMoveSelected() {//移動したか
-        return moveSelected;
-    }
-    public boolean getBattleSelected() {//攻撃したか
-        return battleSelected;
-    }
-    /* damageが0以上なら損傷、0未満なら治療. */
-    public void giveDamage(int attackPoint) {//ダメージ処理
-        hitPoint -= attackPoint;//ダメージ演算
-        if(hitPoint < 0) {//0以下にになったら0にする
-            hitPoint = 0;
-        } else if(hitPoint > maxHitPoint) {//回復したりしたときに最大HPを越さないようにする
-            hitPoint = maxHitPoint;
-        }
-    }
-    public void setMoveSelected(boolean flag) {//ターンの初めに移動しなおせるようにする
-        moveSelected = flag;
-    }
-    public void setBattleSelected(boolean flag) {//ターンの初めに攻撃しなおせるようにする
-        battleSelected = flag;
-    }
-    public void setGraphic(char character) throws IOException{//グラフィックをセットする
-        ImportTile tile = null;
-        if(character == '0') {
-            if(player == 1) {
-                tile = new ImportTile("game/Chara1A.png");
-            } else {
-                tile = new ImportTile("game/Chara1B.png");
-            }
-        } else if(character == '1') {
-            if(player == 1) {
-                tile = new ImportTile("game/Chara2A.png");
-            } else {
-                tile = new ImportTile("game/Chara2B.png");
-            }
-        } else if(character == '2') {
-            if(player == 1) {
-                tile = new ImportTile("game/Chara3A.png");
-            } else {
-                tile = new ImportTile("game/Chara3B.png");
-            }
-        } else if(character == '3') {
-            if(player == 1) {
-                tile = new ImportTile("game/Chara4A.png");
-            } else {
-                tile = new ImportTile("game/Chara4B.png");
-            }
-        } else if(character == '4') {
-            if(player == 1) {
-                tile = new ImportTile("game/Chara5A.png");
-            } else {
-                tile = new ImportTile("game/Chara5B.png");
-            }
-        } else if(character == 'E') {
-            tile = new ImportTile("game/Character.png");
-            if(player == 1) {
-                icon[1] = tile.getTile('E');
-                icon[2] = tile.getTile('E');
-                icon[3] = tile.getTile('E');
-                icon[0] = tile.getTile('E');
-            } else {
-                icon[0] = tile.getTile('D');
-                icon[1] = tile.getTile('D');
-                icon[2] = tile.getTile('D');
-                icon[3] = tile.getTile('D');
-            }
-            graphic = icon[0];
-            return;
-        }
-        icon[0] = tile.getTile('0');
-        icon[1] = tile.getTile('4');
-        icon[2] = tile.getTile('8');
-        icon[3] = tile.getTile('C');
-        graphic = icon[0];
-    }
-    public BufferedImage getGraphic() throws IOException{//グラフィックのゲッター
-        return graphic;
-    }
-    public void setDirection(int n) {//方向転換
-        graphic = icon[n];
-    }
-}
 class Ippan extends BaseCharacter {//一般大学生
     private char c;
     public Ippan(int x, int y, int player) {
@@ -576,7 +414,8 @@ class Kyoju extends BaseCharacter {//教授。人に対して高い攻撃力だ�
 }
 class Kyoten extends BaseCharacter {//拠点
     public Kyoten(int x, int y, int player) {
-        super(25, "拠点", x, y, player, 'E', 0, 0, 4, 0);//ひとまず
+        super(1, "拠点", x, y, player, 'E', 0, 0, 4, 0);//ひとまず
+        //TODO HPを25に直す
     }
 }
 class ImportTile extends Component {//タイルチップを読み込むクラス
@@ -929,8 +768,8 @@ class Map {//マップを生成するクラス
 }
 
 class StageEditScreen extends GameScreen implements MouseListener{//エディタのViewにあたる部分
-    public StageEditScreen(String file) throws IOException {
-        super(file);
+    public StageEditScreen(String file, GameEscape ge) throws IOException {
+        super(file, ge);
     }
     @Override
     public void paintComponent(Graphics g){
@@ -976,9 +815,9 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
     JPanel p3;
     JButton autoMapCreate;
     ImportTile tile = new ImportTile("game/MapTile.png");
-    public StageEditFrame() throws IOException {
+    public StageEditFrame(GameEscape ge) throws IOException {
         JPanel panel = new JPanel();
-        screen = new StageEditScreen("game/map6.txt");
+        screen = new StageEditScreen("game/map6.txt", ge);
         p1=new JPanel();p2=new JPanel(); p3 = new JPanel();
         b[0] = new JButton(new ImageIcon(tile.getTile('.')));
         b[1] = new JButton(new ImageIcon(tile.getTile('0')));
@@ -1063,99 +902,8 @@ class StageEditFrame extends JFrame implements ActionListener {//いつものUI�
         }
     }
 }
-class DynamicTextLabel extends JLabel implements Observer {
-    DynamicTextModel model;
-    public DynamicTextLabel(DynamicTextModel dtm) {
-        model = dtm;
-        this.setText(model.getText());
-        model.addObserver(this);
-    }
-    public void update(Observable o, Object arg){
-        this.setText(model.getText());
-    }
-}
-class DynamicTextModel extends Observable{
-    /* 最初と最後の境目を表現するため、1つダミーを用意 */
-    protected final int MEMORY_SIZE = 6;
-    protected final String EMPTY_STR = "here_is_empty.";
-    protected final String DUMMY_STR = "here_is_dummy."; // 最初だけ使う
-    protected String texts[] = new String[MEMORY_SIZE]; // リンクバッファとして使う
-    /* 表示している場所のindex, ダミーのindex, 最後に記録された場所のindex */
-    protected int index, dum_index, cur_index;
 
-    public DynamicTextModel(String str) {
-        //Arrays.fill(texts, EMPTY_STR);
-        index = 0; dum_index = 0;
-        texts[index] = DUMMY_STR;
-        texts[++index] = str;
-        cur_index = index;
-    }
 
-    protected int previousIndex(int i) {
-        return --i >= 0 ? i : MEMORY_SIZE-1;
-    }
-
-    protected int nextIndex(int i) {
-        return ++i < MEMORY_SIZE ? i : 0;
-    }
-
-    public String getText() {
-        return texts[index];
-    }
-
-    /* テキストを加える */
-    public void changeText(String str) {
-        cur_index = this.nextIndex(cur_index);
-        index = cur_index; // indexを最新にする
-
-        if(index == dum_index) { // ダミーなら現在地の次を空にする
-            dum_index = this.nextIndex(index);
-        }
-        texts[index] = str; // 文字列代入
-
-        setChanged();
-        notifyObservers();
-    }
-
-    /* 1つ前のテキストを表示 */
-    public void toPrevious() {
-        if(this.isFirstNow()) { return; } // これ以上戻れない
-
-        index = this.previousIndex(index);
-
-        setChanged();
-        notifyObservers();
-    }
-
-    /* 1つ後のテキストを表示 */
-    public void toNext() {
-        if(this.isLastNow()) { return; } // これ以上進めない
-
-        index = this.nextIndex(index);
-
-        setChanged();
-        notifyObservers();
-    }
-
-    /* cur_indexに移動 */
-    public void toCurrent() {
-        index = cur_index;
-
-        setChanged();
-        notifyObservers();
-    }
-
-    /* 現在指しているindexは最初のindex? */
-    public boolean isFirstNow() {
-        return this.previousIndex(index) == dum_index;
-    }
-
-    /* 現在指しているindexは最後のindex? */
-    public boolean isLastNow() {
-        return this.nextIndex(index) == dum_index ||
-               texts[ this.nextIndex(index) ] == EMPTY_STR;
-    }
-}
 public class GamePanel extends JPanel implements ActionListener{
     GameScreen screen;
     JButton b1=new JButton("召喚"),b2=new JButton("移動");
@@ -1171,9 +919,11 @@ public class GamePanel extends JPanel implements ActionListener{
     DynamicTextLabel mana;
     DynamicTextLabel textLog;
     DynamicTextLabel mapInfo;
-    public GamePanel(String file) throws IOException {
+    GameEscape escape;
+    public GamePanel(String file, GameEscape ge) throws IOException {
+        escape = ge;
         JPanel panel = new JPanel();
-        screen = new GameScreen(file);
+        screen = new GameScreen(file, escape);
         panel.setLayout(new GridLayout(1, 1));
         panel.add(screen);
         JPanel  p1=new JPanel(),p2=new JPanel();
