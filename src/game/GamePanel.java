@@ -141,8 +141,7 @@ class Kyoju extends BaseCharacter {//教授。人に対して高い攻撃力だ�
 
 class Kyoten extends BaseCharacter {//拠点
     public Kyoten(int x, int y, int player) {
-        super(1, "拠点", x, y, player, 'E', 0, 0, 4, 0);//ひとまず
-        //TODO HPを25に直す
+        super(25, "拠点", x, y, player, 'E', 0, 0, 4, 0);//ひとまず
     }
 }
 
