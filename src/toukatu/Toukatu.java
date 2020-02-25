@@ -11,10 +11,10 @@ import game.*;
 import result.*;
 
 /* 定数のimport */
-import static start.StartManager.START_GAME;
-import static start.StartManager.START_EDIT;
-import static start.StartManager.START_QUIT;
-import static start.StartManager.START_UPDATE;
+import static start.StartPanel.START_GAME;
+import static start.StartPanel.START_EDIT;
+import static start.StartPanel.START_QUIT;
+import static start.StartPanel.START_UPDATE;
 import static game.GameEscape.GAME_RESULT;
 import static game.GameEscape.GAME_START;
 import static result.ResultPanel.RESULT_START;
@@ -24,7 +24,7 @@ import static result.ResultPanel.RESULT_UPDATE;
 /* View */
 /////////////////////////////////////////////////////////
 public class Toukatu extends JFrame implements Observer{
-    StartManager start;
+    StartPanel start;
     GamePanel gp;
     GameEscape ge;
     ResultPanel rp;
@@ -41,7 +41,7 @@ public class Toukatu extends JFrame implements Observer{
         toukatuState = TOUKATU_START;
 
         // スタート画面のセットアップ.
-        start = new StartManager();
+        start = new StartPanel();
         start.model.addObserver(this);
         this.add(start, BorderLayout.CENTER);
         this.addKeyListener(start.getController());
@@ -119,7 +119,7 @@ public class Toukatu extends JFrame implements Observer{
                     case RESULT_START:
                         this.getContentPane().removeAll();
                         toukatuState = TOUKATU_START;
-                        start = new StartManager();
+                        start = new StartPanel();
                         start.model.addObserver(this);
                         this.add(start, BorderLayout.CENTER);
                         this.addKeyListener(start.getController());
