@@ -1,25 +1,13 @@
 package game;
 
-import base.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.nio.file.Paths;
-import java.awt.Color;
-import java.util.Random;
-import java.io.FileWriter;
-import java.util.Observable;
-import java.util.Observer;
 
 class StageEditScreen extends GameScreen implements MouseListener{//エディタのViewにあたる部分
-    public StageEditScreen(String file) throws IOException {
-        super(file);
+    public StageEditScreen(String file, GameEscape ge) throws IOException {
+        super(file, ge);
     }
     @Override
     public void paintComponent(Graphics g){
@@ -51,24 +39,28 @@ class StageEditScreen extends GameScreen implements MouseListener{//エディタ
     public void mouseExited(MouseEvent e)  { }
     public void mousePressed(MouseEvent e) { }
 }
+
 class StageEdit extends Map{//エディタのMにあたる部分
     public StageEdit(String s) {
         super(s);
     }
 }
+
 public class StageEditPanel extends JPanel implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditPanel()をどっかでやればいいはず.
     StageEditScreen screen;//ゲーム画面用の変数
+    GameEscape escape;
     JButton save = new JButton("save");//押すと現在のエディタのマップがテキストファイルに保存される
     JButton b [] = new JButton[16];//タイル
     JPanel p1;
     JPanel p2;
     JPanel p3;
     JButton autoMapCreate;
-    ImportTile tile;
-    public StageEditPanel() throws IOException {
+    ImportTile tile = new ImportTile("game/MapTile.png");
+
+    public StageEditPanel(GameEscape ge) throws IOException {
+        escape = ge;
         JPanel panel = new JPanel();
-        tile = new ImportTile("game/MapTile.png");
-        screen = new StageEditScreen("map6.txt");
+        screen = new StageEditScreen("map6.txt", ge);
         p1=new JPanel();p2=new JPanel(); p3 = new JPanel();
         b[0] = new JButton(new ImageIcon(tile.getTile('.')));
         b[1] = new JButton(new ImageIcon(tile.getTile('0')));
@@ -89,10 +81,11 @@ public class StageEditPanel extends JPanel implements ActionListener {//いつ�
         autoMapCreate = new JButton("自動生成");
         panel.setLayout(new GridLayout(1,1));
         panel.add(screen);
-        autoMapCreate.addActionListener(this);
         p2.setLayout(new GridLayout(4,4));
         p1.setLayout(new GridLayout(1,2));
         p1.add(autoMapCreate);
+        autoMapCreate.addActionListener(this);
+        p1.add(save);
         for(int i = 0; i < 16; i++) {//actionListernerいれる奴
             b[i].addActionListener(this);;
         }
@@ -100,7 +93,6 @@ public class StageEditPanel extends JPanel implements ActionListener {//いつ�
             p2.add(b[i]);
         }
         save.addActionListener(this);
-        p1.add(save);
         this.setLayout(new BorderLayout());
         this.add(p1, BorderLayout.SOUTH);
         this.add(p2,BorderLayout.EAST);
@@ -142,6 +134,7 @@ public class StageEditPanel extends JPanel implements ActionListener {//いつ�
         } else if(e.getSource() == save) {
             try {
                 screen.map.saveMap();//セーブ
+                escape.toStart();
             } catch (Exception IE) {
                 //TODO: handle exception
             }

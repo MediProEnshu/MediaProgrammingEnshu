@@ -27,6 +27,7 @@ public class Toukatu extends JFrame implements Observer{
     StartPanel start;
     GamePanel game;
     GameEscape ge;
+    StageEditPanel stageedit;
     ResultPanel result;
 
     private int toukatuState;
@@ -61,6 +62,8 @@ public class Toukatu extends JFrame implements Observer{
         case TOUKATU_GAME:
             this.gameManager();
             break;
+        case TOUKATU_EDIT:
+            this.stageeditManager();
         case TOUKATU_RESULT:
             this.resultManager();
             break;
@@ -79,7 +82,7 @@ public class Toukatu extends JFrame implements Observer{
             try {
                 ge = new GameEscape();
                 ge.addObserver(this);
-                game = new GamePanel("map5.txt", ge);
+                game = new GamePanel("map6.txt", ge);
             } catch(IOException e) {
                 System.out.println("ゲーム部分でのエラー");
                 new QuitGame();
@@ -94,12 +97,12 @@ public class Toukatu extends JFrame implements Observer{
             try {
                 ge = new GameEscape();
                 ge.addObserver(this);
-                game = new GamePanel("map6.txt", ge);
+                stageedit = new StageEditPanel(ge);
             } catch(IOException e) {
                 System.out.println("ステージエディト部分でのエラー");
                 new QuitGame();
             }
-            this.add(game, BorderLayout.CENTER);
+            this.add(stageedit, BorderLayout.CENTER);
             this.revalidate();
             this.repaint();
             break;
@@ -136,6 +139,18 @@ public class Toukatu extends JFrame implements Observer{
             System.out.println("ゲーム処理部分でのエラー");
             new QuitGame();
         }
+    }
+
+    /* ステージ編集画面での処理 */
+    private void stageeditManager() {
+        this.getContentPane().removeAll();
+        toukatuState = TOUKATU_START;
+        start = new StartPanel();
+        start.model.addObserver(this);
+        this.add(start, BorderLayout.CENTER);
+        this.addKeyListener(start.getController());
+        this.revalidate();
+        this.repaint();
     }
 
     /* リザルト画面での処理 */
