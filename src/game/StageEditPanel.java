@@ -46,8 +46,9 @@ class StageEdit extends Map{//エディタのMにあたる部分
     }
 }
 
-public class StageEditPanel extends JFrame implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditPanel()をどっかでやればいいはず.
+public class StageEditPanel extends JPanel implements ActionListener {//いつものUIにあたるVの部分.起動するのにはnew StageEditPanel()をどっかでやればいいはず.
     StageEditScreen screen;//ゲーム画面用の変数
+    GameEscape escape;
     JButton save = new JButton("save");//押すと現在のエディタのマップがテキストファイルに保存される
     JButton b [] = new JButton[16];//タイル
     JPanel p1;
@@ -55,9 +56,11 @@ public class StageEditPanel extends JFrame implements ActionListener {//いつ�
     JPanel p3;
     JButton autoMapCreate;
     ImportTile tile = new ImportTile("game/MapTile.png");
+
     public StageEditPanel(GameEscape ge) throws IOException {
+        escape = ge;
         JPanel panel = new JPanel();
-        screen = new StageEditScreen("game/map6.txt", ge);
+        screen = new StageEditScreen("map6.txt", ge);
         p1=new JPanel();p2=new JPanel(); p3 = new JPanel();
         b[0] = new JButton(new ImageIcon(tile.getTile('.')));
         b[1] = new JButton(new ImageIcon(tile.getTile('0')));
@@ -90,12 +93,10 @@ public class StageEditPanel extends JFrame implements ActionListener {//いつ�
             p2.add(b[i]);
         }
         save.addActionListener(this);
+        this.setLayout(new BorderLayout());
         this.add(p1, BorderLayout.SOUTH);
         this.add(p2,BorderLayout.EAST);
         this.add(panel, BorderLayout.CENTER);
-        this.pack();
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
     }
     public void actionPerformed(ActionEvent e){//押すボタンによってセットするタイルを変えてる
         if(e.getSource() == b[0]) {
@@ -133,6 +134,7 @@ public class StageEditPanel extends JFrame implements ActionListener {//いつ�
         } else if(e.getSource() == save) {
             try {
                 screen.map.saveMap();//セーブ
+                escape.toStart();
             } catch (Exception IE) {
                 //TODO: handle exception
             }
