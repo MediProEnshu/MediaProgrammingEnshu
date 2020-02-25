@@ -8,7 +8,7 @@ import base.*;
 
 /* View */
 /////////////////////////////////////////////////////////
-public class StartManager extends JPanel {
+public class StartPanel extends JPanel {
     /* セレクトオブジェクトの準備 */
     public BaseSelectModel model;
     public BaseSelectView view;
@@ -22,7 +22,7 @@ public class StartManager extends JPanel {
 
     private int start_state; // 選択したボタンに応じて値が変化する（統括への通知用）
 
-    public StartManager() {
+    public StartPanel() {
         start_state = -1; // 初期化. 選ばれていない状態.
 
         String[] cmds = {"ゲームを始める", "ステージを作る", "ゲームを終わる" }; // コマンドを追加
@@ -37,7 +37,7 @@ public class StartManager extends JPanel {
         //画面のタイトル（title）と操作説明部分（notice）
         JLabel title = new JLabel("Submission Impossible");
         title.setHorizontalAlignment(JLabel.CENTER);
-        title.setFont(new Font("Impact", Font.PLAIN, 60));
+        title.setFont(new Font("MS ゴシック", Font.PLAIN, 60));
         JLabel notice = new JLabel("select : ↑↓　 Press Enter");
         notice.setHorizontalAlignment(JLabel.CENTER);
         notice.setFont(new Font("MS ゴシック", Font.PLAIN, 40));
